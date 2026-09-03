@@ -1,6 +1,10 @@
+import os
+PROJECT = os.environ.get("PDL1_PROJECT", os.path.expanduser("~/protein_designs/pdl1_bench"))
+OUTDIR = os.environ.get("PDL1_OUT", "build")
+os.makedirs(OUTDIR, exist_ok=True)
 import io
-B="/mnt/c/Users/thanh/AppData/Local/Temp/claude/C--Users-thanh-Documents/9a8e1c59-098d-4338-a1cc-e43c6d31654e/scratchpad"
-tpl=io.open(B+"/report.template.html",encoding="utf-8").read()
+B=OUTDIR
+tpl=io.open(os.path.join(os.path.dirname(os.path.abspath(__file__)),"report.template.html"),encoding="utf-8").read()
 data=io.open(B+"/report_slim.json",encoding="utf-8").read()
 assert "/*__DATA__*/" in tpl, "placeholder missing"
 out=tpl.replace("/*__DATA__*/", data)

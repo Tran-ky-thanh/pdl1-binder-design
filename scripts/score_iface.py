@@ -21,12 +21,16 @@ Usage: python3 score_iface.py CAND MODEL_PDB
 NOTE: the DockQ CLI output parsing (dockq() below) MUST be validated on 2-3
       complexes once tools are reachable -- run with DEBUG=1 to dump raw output.
 """
+import os
+PROJECT = os.environ.get("PDL1_PROJECT", os.path.expanduser("~/protein_designs/pdl1_bench"))
+OUTDIR = os.environ.get("PDL1_OUT", "build")
+os.makedirs(OUTDIR, exist_ok=True)
 import os, sys, csv, re, subprocess, tempfile, copy, warnings
 warnings.filterwarnings("ignore")
 from Bio.PDB import PDBParser, PDBIO, NeighborSearch
 from Bio.PDB.SASA import ShrakeRupley
 
-FS = "/home/thanh/protein_designs/pdl1_bench"
+FS = PROJECT
 SELMAP = FS + "/fold_screen/selection_map.csv"
 BBDIRS = [FS + "/rfdiff_out2", FS + "/rfdiff_out"]
 P = PDBParser(QUIET=True)

@@ -1,6 +1,10 @@
+import os
+PROJECT = os.environ.get("PDL1_PROJECT", os.path.expanduser("~/protein_designs/pdl1_bench"))
+OUTDIR = os.environ.get("PDL1_OUT", "build")
+os.makedirs(OUTDIR, exist_ok=True)
 import json, csv
-OUT="/mnt/c/Users/thanh/AppData/Local/Temp/claude/C--Users-thanh-Documents/9a8e1c59-098d-4338-a1cc-e43c6d31654e/scratchpad"
-SC="/home/thanh/protein_designs/pdl1_bench/fold_screen/complex_run/scoring"
+OUT=OUTDIR
+SC=PROJECT+"/fold_screen/complex_run/scoring"
 data=json.load(open(OUT+"/report_data.json"))
 # strip pdb from ranks >30 to keep file lean
 for d in data["designs"]:

@@ -3,9 +3,9 @@
 # Resumable (per-cand .row files) + parallel. Safe to run while GPU folds.
 # Usage: bash run_scoring.sh [NPROC]   (default 4)
 set -u
-RUN=/home/thanh/protein_designs/pdl1_bench/fold_screen/complex_run
+RUN=${PDL1_PROJECT:-$HOME/protein_designs/pdl1_bench}/fold_screen/complex_run
 SC=$RUN/scoring; ROWS=$SC/rows; mkdir -p "$ROWS"
-PY=/home/thanh/protein_designs/pdl1_bench/.venv/bin/python
+PY=${PDL1_PROJECT:-$HOME/protein_designs/pdl1_bench}/.venv/bin/python
 SCRIPT=$SC/score_iface.py
 NPROC=${1:-4}
 cd "$SC"

@@ -1,7 +1,11 @@
+import os
+PROJECT = os.environ.get("PDL1_PROJECT", os.path.expanduser("~/protein_designs/pdl1_bench"))
+OUTDIR = os.environ.get("PDL1_OUT", "build")
+os.makedirs(OUTDIR, exist_ok=True)
 import csv, numpy as np, matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-R="/home/thanh/protein_designs/pdl1_bench"
+R=PROJECT
 rows=list(csv.DictReader(open(R+"/colabfold/cf_eval.csv")))
 def short(n):
     n=n.replace("mythos_preview_single_target_pdl1_","M.st_").replace("mythos_preview_multi_target_pdl1_","M.mt_")
@@ -38,7 +42,7 @@ panel(ax[1],y2,"localColabFold ipTM","localColabFold ipTM",r2)
 ax[0].legend(handles=leg,fontsize=8.5,loc="upper left",framealpha=.95)
 fig.suptitle("Dataset consensus vs. independent localColabFold — 7 PD-L1 designs",fontsize=13)
 fig.tight_layout(rect=[0,0,1,.95])
-out="/mnt/c/Users/thanh/AppData/Local/Temp/claude/C--Users-thanh-Documents/9a8e1c59-098d-4338-a1cc-e43c6d31654e/scratchpad/colabfold_consensus.png"
+out=OUTDIR+"/colabfold_consensus.png"
 fig.savefig(out,dpi=150,bbox_inches="tight")
 fig.savefig(R+"/colabfold/consensus_vs_localcolabfold.png",dpi=150,bbox_inches="tight")
 import os; print("saved",out,round(os.path.getsize(out)/1024),"KB")

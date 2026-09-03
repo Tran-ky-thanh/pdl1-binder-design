@@ -22,7 +22,10 @@
 set -uo pipefail
 
 # ---------- config (override via environment) ----------
-PROJECT="${PROJECT:-/home/thanh/protein_designs/pdl1_bench}"
+PROJECT="${PROJECT:-$HOME/protein_designs/pdl1_bench}"
+# Python scripts read these; export so subprocesses (scoring, cofold) inherit them.
+export PDL1_PROJECT="${PDL1_PROJECT:-$PROJECT}"
+export PDL1_OUT="${PDL1_OUT:-$PROJECT/build}"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPTS="$REPO/scripts"
 VENV="${VENV:-$PROJECT/.venv}"
@@ -35,8 +38,8 @@ DRYRUN="${DRYRUN:-0}"
 
 # external tool roots (run as root)
 CONDA_ROOT="/root/miniforge3"
-RFDIFF="/root/protein/RFdiffusion"
-LCF="/root/protein/localcolabfold"
+RFDIFF="${RFDIFF:-/root/protein/RFdiffusion}"
+LCF="${LCF:-/root/protein/localcolabfold}"
 
 # ColabFold time-savers (see PIPELINE.md, stage 04)
 export JAX_COMPILATION_CACHE_DIR="${JAX_COMPILATION_CACHE_DIR:-$HOME/.cache/colabfold_jax}"

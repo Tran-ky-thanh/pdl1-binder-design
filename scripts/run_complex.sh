@@ -4,13 +4,13 @@
 # This loop always attacks the lowest incomplete chunk and auto-restarts on death,
 # grinding until all chunks complete. .done.txt persistence => every restart resumes.
 source /root/miniforge3/etc/profile.d/conda.sh
-export PATH=/root/protein/localcolabfold/colabfold-conda/bin:$PATH
+export PATH=${LCF:-/root/protein/localcolabfold}/colabfold-conda/bin:$PATH
 export MPLBACKEND=Agg
 unset DISPLAY
 export JAX_COMPILATION_CACHE_DIR=$HOME/.cache/colabfold_jax
 mkdir -p "$JAX_COMPILATION_CACHE_DIR"
 
-ROOT=/home/thanh/protein_designs/pdl1_bench/fold_screen/complex_run
+ROOT=${PDL1_PROJECT:-$HOME/protein_designs/pdl1_bench}/fold_screen/complex_run
 cd "$ROOT"
 
 exec 9>"$ROOT/.run.lock"

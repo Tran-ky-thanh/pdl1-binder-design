@@ -24,8 +24,16 @@ Field-tested and verified in this environment: `check` (all green), `07_rank`
 
 ## The two environments (and how to switch)
 
-Everything below assumes you set `PROJECT` to the working data dir (default
-`/home/thanh/protein_designs/pdl1_bench`). Override anything via env vars.
+No paths are hard-coded. Set two environment variables (both default to a `~`-relative path):
+
+```bash
+export PDL1_PROJECT=/path/to/working/data   # structures, scoring CSVs, the reference dataset
+export PDL1_OUT=./build                       # generated report data + figures
+```
+
+`run_pipeline.sh` reads `PROJECT` (defaulting to `$HOME/protein_designs/pdl1_bench`) and
+exports `PDL1_PROJECT` / `PDL1_OUT` so every Python subprocess inherits them; each Python
+script also honours these variables directly.
 
 ### ROOT env — RFdiffusion + localColabFold (stages 00, 02, 04)
 Installed under `/root/protein`, so run them **as root**, GPU required:
@@ -39,7 +47,7 @@ unset DISPLAY; export MPLBACKEND=Agg
 
 ### USER venv — scoring / ranking / analysis (stages 05, 07, 08)
 ```bash
-source /home/thanh/protein_designs/pdl1_bench/.venv/bin/activate
+source $PDL1_PROJECT/.venv/bin/activate
 # or call the interpreter directly: $PROJECT/.venv/bin/python
 ```
 

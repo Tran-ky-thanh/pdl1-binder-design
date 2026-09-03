@@ -15,6 +15,10 @@ Pipeline reverse-engineered from the dataset's column_dictionary:
 Structures + PAE live inside a 74 GB zip in the repo; we pull only the members
 we need via HTTP range requests (remotezip). Nothing else is downloaded whole.
 """
+import os
+PROJECT = os.environ.get("PDL1_PROJECT", os.path.expanduser("~/protein_designs/pdl1_bench"))
+OUTDIR = os.environ.get("PDL1_OUT", "build")
+os.makedirs(OUTDIR, exist_ok=True)
 import os, re, sys, subprocess, argparse, warnings
 import numpy as np
 import pandas as pd
@@ -29,7 +33,7 @@ ZIP_URL = (f"https://huggingface.co/datasets/{REPO}/resolve/main/"
            "structure_and_pae/protein_binder_design_structure_and_pae_release.zip")
 ZIP_PREFIX = "protein_binder_design_structure_and_pae_release/"
 BB = {"N", "CA", "C", "O"}
-WORK = "/home/thanh/protein_designs/pdl1_bench"
+WORK = PROJECT
 FILES = os.path.join(WORK, "files")
 os.makedirs(FILES, exist_ok=True)
 PDB = PDBParser(QUIET=True)

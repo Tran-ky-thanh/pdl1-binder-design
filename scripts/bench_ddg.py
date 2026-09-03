@@ -6,6 +6,10 @@ analyze (RELAX=0 to skip). Writes rows incrementally (flush) so partial results
 are readable via the file mount while it runs.
 Usage: python3 bench_ddg.py OUT_CSV [N_OURS=20]
 """
+import os
+PROJECT = os.environ.get("PDL1_PROJECT", os.path.expanduser("~/protein_designs/pdl1_bench"))
+OUTDIR = os.environ.get("PDL1_OUT", "build")
+os.makedirs(OUTDIR, exist_ok=True)
 import os, sys, glob, tempfile, random, warnings
 warnings.filterwarnings("ignore")
 from Bio.PDB import MMCIFParser, PDBIO
@@ -14,7 +18,7 @@ pyrosetta.init("-mute all -ignore_unrecognized_res -ignore_zero_occupancy false"
 from pyrosetta import pose_from_pdb
 from pyrosetta.rosetta.protocols.analysis import InterfaceAnalyzerMover
 
-FS = "/home/thanh/protein_designs/pdl1_bench"
+FS = PROJECT
 DATA = FS + "/files/designs/PD-L1"
 RUN = FS + "/fold_screen/complex_run"
 

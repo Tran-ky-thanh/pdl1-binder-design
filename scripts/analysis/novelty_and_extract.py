@@ -1,8 +1,12 @@
+import os
+PROJECT = os.environ.get("PDL1_PROJECT", os.path.expanduser("~/protein_designs/pdl1_bench"))
+OUTDIR = os.environ.get("PDL1_OUT", "build")
+os.makedirs(OUTDIR, exist_ok=True)
 import csv, os, glob, json
 import pandas as pd
-SC="/home/thanh/protein_designs/pdl1_bench/fold_screen/complex_run/scoring"
-OUT="/mnt/c/Users/thanh/AppData/Local/Temp/claude/C--Users-thanh-Documents/9a8e1c59-098d-4338-a1cc-e43c6d31654e/scratchpad"
-CHUNKS="/home/thanh/protein_designs/pdl1_bench/fold_screen/complex_run"
+SC=PROJECT+"/fold_screen/complex_run/scoring"
+OUT=OUTDIR
+CHUNKS=PROJECT+"/fold_screen/complex_run"
 
 # our 43 ranked
 rank={}
@@ -11,7 +15,7 @@ for r in csv.DictReader(open(SC+"/final_ranking.csv")):
 sel={r["cand"]:r for r in csv.DictReader(open(SC+"/final_selection.csv"))}
 
 # anthropic PD-L1 binders
-df=pd.read_parquet("/home/thanh/protein_designs/pdl1_bench/meta/design_summary.parquet")
+df=pd.read_parquet(PROJECT+"/meta/design_summary.parquet")
 print("targets:",df['target'].value_counts().to_dict())
 pdl1=df[df['target'].astype(str).str.contains('PD-L1',case=False,na=False)].copy()
 print("PD-L1 rows:",len(pdl1))

@@ -1,7 +1,11 @@
+import os
+PROJECT = os.environ.get("PDL1_PROJECT", os.path.expanduser("~/protein_designs/pdl1_bench"))
+OUTDIR = os.environ.get("PDL1_OUT", "build")
+os.makedirs(OUTDIR, exist_ok=True)
 import io, glob, json
 from Bio.PDB import PDBParser, Superimposer, PDBIO
-OUT="/mnt/c/Users/thanh/AppData/Local/Temp/claude/C--Users-thanh-Documents/9a8e1c59-098d-4338-a1cc-e43c6d31654e/scratchpad"
-CHUNKS="/home/thanh/protein_designs/pdl1_bench/fold_screen/complex_run"
+OUT=OUTDIR
+CHUNKS=PROJECT+"/fold_screen/complex_run"
 parser=PDBParser(QUIET=True)
 
 def find_pdb(cand):

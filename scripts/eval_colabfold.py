@@ -10,13 +10,17 @@ For each design's ColabFold rank_001 model we compute:
     / target-heavy recipe) -> "did CF fold the intended pose?"
 Then line them up with the dataset consensus ipsae_min and the wet-lab verdict.
 """
+import os
+PROJECT = os.environ.get("PDL1_PROJECT", os.path.expanduser("~/protein_designs/pdl1_bench"))
+OUTDIR = os.environ.get("PDL1_OUT", "build")
+os.makedirs(OUTDIR, exist_ok=True)
 import os, glob, json, sys
 import numpy as np
 import pandas as pd
-sys.path.insert(0, "/home/thanh/protein_designs/pdl1_bench")
+sys.path.insert(0, PROJECT)
 import recompute_pdl1 as R
 
-WORK = "/home/thanh/protein_designs/pdl1_bench"
+WORK = PROJECT
 OUT = os.path.join(WORK, "colabfold", "out2")
 
 

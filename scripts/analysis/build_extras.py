@@ -1,13 +1,19 @@
+import os
+PROJECT = os.environ.get("PDL1_PROJECT", os.path.expanduser("~/protein_designs/pdl1_bench"))
+OUTDIR = os.environ.get("PDL1_OUT", "build")
+os.makedirs(OUTDIR, exist_ok=True)
 import json, base64, glob, io
 from Bio.PDB import PDBParser, Superimposer, PDBIO, Structure, Model
-OUT="/mnt/c/Users/thanh/AppData/Local/Temp/claude/C--Users-thanh-Documents/9a8e1c59-098d-4338-a1cc-e43c6d31654e/scratchpad"
-R="/home/thanh/protein_designs/pdl1_bench"
+OUT=OUTDIR
+R=PROJECT
 SC=R+"/fold_screen/complex_run/scoring"
 CH=R+"/fold_screen/complex_run"
 data=json.load(open(OUT+"/report_slim.json"))
 
-# ---- figures for section 02 ----
-for key,path in [("fig_comparison", R+"/comparison.png"), ("fig_relax", SC+"/relax_compare.png")]:
+# ---- figures for section 02 (metric-code reproduction + consensus validation) ----
+# colabfold_consensus.png is produced by make_valfig.py; run it before this script.
+for key,path in [("fig_comparison", R+"/comparison.png"),
+                 ("fig_consensus", OUT+"/colabfold_consensus.png")]:
     data[key]=base64.b64encode(open(path,"rb").read()).decode()
     print("embedded", key, round(len(data[key])/1024), "KB b64")
 
