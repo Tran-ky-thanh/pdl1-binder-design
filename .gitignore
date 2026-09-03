@@ -40,7 +40,9 @@ predictions.parquet
 *.pdb
 *.cif
 !report/**
-!inputs/**          # keep the committed RFdiffusion target inputs
+# keep the committed RFdiffusion target inputs
+!inputs/
+!inputs/**
 
 # --- logs, temp, os ---
 *.log
