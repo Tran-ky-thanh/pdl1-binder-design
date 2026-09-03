@@ -1,0 +1,639 @@
+<title>De Novo PD-L1 Binders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.5.5/3Dmol-min.js"></script>
+<style>
+:root{
+  --bg:#f4f6f3; --surface:#ffffff; --surface-2:#eaeee9; --raise:#ffffff;
+  --ink:#181d1b; --ink-soft:#586761; --ink-faint:#8a968f;
+  --line:#d8ded7; --line-soft:#e7ebe5;
+  --accent:#0e8a80; --accent-deep:#0a6d64; --accent-soft:#d7ede9;
+  --header:#173038; --target:#a99a80;
+  --pass:#2f9e5f; --warn:#d1892a; --fail:#c94f42;
+  --viewer-bg:#0d1512;
+  --shadow:0 1px 2px rgba(20,30,26,.05),0 6px 20px rgba(20,30,26,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1211; --surface:#161b19; --surface-2:#1d2421; --raise:#1a201d;
+  --ink:#e9ede9; --ink-soft:#9ba49e; --ink-faint:#6d766f;
+  --line:#2a322e; --line-soft:#222a26;
+  --accent:#31b0a4; --accent-deep:#3cc4b6; --accent-soft:#122a27;
+  --header:#bcd3d8; --target:#9a8c72;
+  --pass:#43b673; --warn:#e0a24a; --fail:#e0685c;
+  --viewer-bg:#0a100e;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 26px rgba(0,0,0,.35);
+}}
+:root[data-theme="dark"]{
+  --bg:#0e1211; --surface:#161b19; --surface-2:#1d2421; --raise:#1a201d;
+  --ink:#e9ede9; --ink-soft:#9ba49e; --ink-faint:#6d766f;
+  --line:#2a322e; --line-soft:#222a26;
+  --accent:#31b0a4; --accent-deep:#3cc4b6; --accent-soft:#122a27;
+  --header:#bcd3d8; --target:#9a8c72;
+  --pass:#43b673; --warn:#e0a24a; --fail:#e0685c;
+  --viewer-bg:#0a100e;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 26px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;line-height:1.6;
+  -webkit-font-smoothing:antialiased;font-size:15.5px}
+h1,h2,h3,h4{font-family:"Spectral",Georgia,serif;line-height:1.18;text-wrap:balance;font-weight:600;color:var(--ink)}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+a{color:var(--accent-deep);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1020px;margin:0 auto;padding:0 22px}
+
+/* nav */
+nav.bar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav.bar .row{max-width:1020px;margin:0 auto;padding:9px 22px;display:flex;align-items:center;gap:16px}
+nav.bar .brand{font-family:"Spectral";font-weight:700;font-size:15px;letter-spacing:.01em;white-space:nowrap}
+nav.bar .brand b{color:var(--accent-deep)}
+nav.bar .links{display:flex;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none}
+nav.bar .links::-webkit-scrollbar{display:none}
+nav.bar .links a{color:var(--ink-soft);font-size:12.5px;padding:5px 9px;border-radius:7px;white-space:nowrap;font-weight:500}
+nav.bar .links a:hover{background:var(--surface-2);text-decoration:none;color:var(--ink)}
+.themebtn{border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);
+  width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:15px;flex:none;display:grid;place-items:center}
+.themebtn:hover{color:var(--ink);border-color:var(--accent)}
+
+/* hero */
+.hero{padding:58px 0 30px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:"IBM Plex Mono";font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent-deep);font-weight:500;margin-bottom:16px}
+.hero h1{font-size:clamp(30px,5.4vw,50px);margin:0 0 16px;font-weight:700;letter-spacing:-.01em}
+.hero .lede{font-size:clamp(16px,2.3vw,19px);color:var(--ink-soft);max-width:70ch;margin:0}
+.hero .lede em{color:var(--ink);font-style:normal;font-weight:600}
+.meta{display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:26px}
+.chip{font-family:"IBM Plex Mono";font-size:12px;background:var(--surface);border:1px solid var(--line);
+  padding:5px 11px;border-radius:999px;color:var(--ink-soft)}
+.chip b{color:var(--ink);font-weight:500}
+
+section{padding:46px 0;border-bottom:1px solid var(--line-soft)}
+.kicker{font-family:"IBM Plex Mono";font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-deep);margin:0 0 6px;font-weight:500}
+section h2{font-size:clamp(23px,3.4vw,31px);margin:0 0 8px;font-weight:600}
+section h2+.sub{color:var(--ink-soft);font-size:16px;margin:0 0 26px;max-width:74ch}
+section h3{font-size:19px;margin:30px 0 10px}
+p{max-width:74ch}
+.lead-in{max-width:74ch}
+strong{font-weight:600}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 24px;box-shadow:var(--shadow)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:720px){.grid2,.grid3{grid-template-columns:1fr}}
+
+.callout{border-left:3px solid var(--accent);background:var(--accent-soft);
+  padding:14px 18px;border-radius:0 10px 10px 0;margin:20px 0;color:var(--ink)}
+.callout .t{font-weight:600;font-size:14px;margin-bottom:3px}
+.callout.warn{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 12%,var(--surface))}
+
+/* stat row */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}
+@media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 16px}
+.stat .n{font-family:"Spectral";font-size:30px;font-weight:700;color:var(--accent-deep);line-height:1}
+.stat .l{font-size:12.5px;color:var(--ink-soft);margin-top:6px}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:8px 0 4px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:640px}
+th,td{padding:8px 11px;text-align:right;border-bottom:1px solid var(--line-soft);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{background:var(--surface-2);font-weight:600;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);position:sticky;top:0}
+tbody tr:hover{background:var(--surface-2)}
+td.num,th.num{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font-family:"IBM Plex Mono";font-size:11px;padding:2px 7px;border-radius:6px;font-weight:500}
+.tag.mpnn{background:var(--accent-soft);color:var(--accent-deep)}
+.tag.smpnn{background:color-mix(in srgb,var(--warn) 16%,var(--surface));color:var(--warn)}
+.rk{font-family:"Spectral";font-weight:700;color:var(--ink-faint)}
+.top10 .rk{color:var(--accent-deep)}
+
+/* charts */
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 18px 12px;box-shadow:var(--shadow)}
+.chart .ct{font-weight:600;font-size:14.5px;margin-bottom:2px}
+.chart .cc{font-size:12.5px;color:var(--ink-soft);margin-bottom:12px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--ink-soft);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+/* 3d */
+.featgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:860px){.featgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.featgrid{grid-template-columns:1fr}}
+.viewcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.viewer{position:relative;width:100%;aspect-ratio:1/.86;background:var(--viewer-bg);cursor:grab}
+.viewer canvas{border-radius:0}
+.viewer .badge{position:absolute;top:9px;left:9px;z-index:2;font-family:"IBM Plex Mono";font-size:11px;
+  background:rgba(10,16,14,.72);color:#eafffb;padding:3px 8px;border-radius:6px;backdrop-filter:blur(3px)}
+.viewer .hint{position:absolute;bottom:8px;right:9px;z-index:2;font-size:10px;color:#cfe;opacity:.6;font-family:"IBM Plex Mono"}
+.viewcard .cap{padding:12px 15px}
+.viewcard .cap .h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.viewcard .cap .h b{font-family:"IBM Plex Mono";font-size:14px}
+.viewcard .cap .h .z{font-family:"Spectral";font-weight:700;color:var(--accent-deep);font-size:16px}
+.viewcard .cap .m{font-size:12px;color:var(--ink-soft);margin-top:5px;display:flex;gap:12px;flex-wrap:wrap}
+.viewcard .cap .m span b{color:var(--ink);font-weight:600;font-family:"IBM Plex Mono"}
+
+/* explorer */
+.explorer{display:grid;grid-template-columns:1fr 280px;gap:16px;margin-top:8px}
+@media(max-width:820px){.explorer{grid-template-columns:1fr}}
+#bigviewer{position:relative;width:100%;aspect-ratio:16/11;background:var(--viewer-bg);border-radius:14px;overflow:hidden;border:1px solid var(--line);cursor:grab}
+#bigviewer .badge{position:absolute;top:11px;left:11px;z-index:2;font-family:"IBM Plex Mono";font-size:12px;background:rgba(10,16,14,.72);color:#eafffb;padding:4px 10px;border-radius:7px}
+.explorer .side{display:flex;flex-direction:column;gap:10px}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+.controls button{font-family:"IBM Plex Sans";font-size:12.5px;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink-soft);padding:6px 11px;border-radius:8px;cursor:pointer;font-weight:500}
+.controls button:hover{border-color:var(--accent);color:var(--ink)}
+.controls button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.picklist{border:1px solid var(--line);border-radius:12px;overflow-y:auto;max-height:340px;background:var(--surface)}
+.picklist button{display:flex;justify-content:space-between;width:100%;border:0;background:none;text-align:left;
+  padding:7px 12px;cursor:pointer;font-size:12.5px;color:var(--ink);border-bottom:1px solid var(--line-soft);gap:8px}
+.picklist button:hover{background:var(--surface-2)}
+.picklist button.sel{background:var(--accent-soft)}
+.picklist button .c{font-family:"IBM Plex Mono"}
+.picklist button .z{font-family:"IBM Plex Mono";color:var(--ink-soft)}
+
+ul.clean{max-width:74ch;padding-left:20px}
+ul.clean li{margin:7px 0}
+.tip{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
+.tip h4{font-family:"IBM Plex Sans";font-weight:600;font-size:14.5px;margin:0 0 6px;display:flex;gap:8px;align-items:center}
+.tip h4 .ic{font-size:16px}
+.tip p{font-size:13.5px;color:var(--ink-soft);margin:0}
+.tip code{font-family:"IBM Plex Mono";font-size:12px;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--ink)}
+.tipgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+@media(max-width:720px){.tipgrid{grid-template-columns:1fr}}
+
+.seqbox{font-family:"IBM Plex Mono";font-size:11.5px;line-height:1.7;word-break:break-all;color:var(--ink-soft);
+  background:var(--surface-2);border-radius:8px;padding:9px 11px;margin-top:8px}
+footer{padding:40px 0 70px;color:var(--ink-soft);font-size:13px}
+footer .wrap{display:flex;flex-direction:column;gap:6px}
+.src{font-size:12.5px;color:var(--ink-faint);font-style:italic;margin-top:10px}
+hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
+</style>
+
+<nav class="bar"><div class="row">
+  <div class="brand">PD&#8209;L1 <b>&#8594;</b> binders</div>
+  <div class="links">
+    <a href="#why">Why</a><a href="#build">Generation</a><a href="#colabfold">ColabFold filter</a><a href="#pipeline">Pipeline</a>
+    <a href="#results">Results</a><a href="#top30">Top&nbsp;30</a><a href="#novelty">Novelty</a><a href="#tips">Lessons</a>
+  </div>
+  <button class="themebtn" id="themebtn" title="Toggle theme">&#9789;</button>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="eyebrow">Computational report &middot; single consumer GPU</div>
+  <h1>De novo PD&#8209;L1 miniprotein binders on an 8&nbsp;GB GPU</h1>
+  <p class="lede">A staged screening pipeline that reproduces the Anthropic binder&#8209;design methodology under a hard compute budget: a <em>cheap local co&#8209;fold triage</em> narrows 1,050 candidates, then <em>free cloud co&#8209;folders vote</em> to rank the survivors. From 52 RFdiffusion backbones and 4,905 MPNN sequences down to a <em>novel top&#8209;30</em>, none more than 44.6% identical to any reference PD&#8209;L1 design.</p>
+  <div class="meta" id="meta"></div>
+</div></header>
+
+<main>
+
+<section id="why"><div class="wrap">
+  <p class="kicker">00 &middot; Motivation</p>
+  <h2>Why this shape of pipeline</h2>
+  <p class="sub">The method was chosen by the hardware, not the other way around. Every stage exists to spend the scarce resource &mdash; GPU memory and wall&#8209;clock &mdash; only where it changes a decision.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h3 style="margin-top:0">The constraint</h3>
+      <p style="font-size:14px;color:var(--ink-soft)">A single <b style="color:var(--ink)">RTX&nbsp;3070&nbsp;Ti, 8&nbsp;GB VRAM</b> inside WSL2/Ubuntu. That is enough to run localColabFold (AlphaFold2&#8209;multimer) on a two&#8209;chain complex &mdash; but only just, and only at low settings. It is <b style="color:var(--ink)">not</b> enough to run large modern co&#8209;folders (AlphaFold3, Boltz, Chai) locally, nor to fold 1,050 complexes at 5&nbsp;seeds &times; high recycle counts in any reasonable time.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">The response</h3>
+      <p style="font-size:14px;color:var(--ink-soft)">Make the first pass <b style="color:var(--ink)">cheap and local</b>: one localColabFold prediction per design (recycle&nbsp;1, single seed), scored with the same interface metrics the reference study uses. Then <b style="color:var(--ink)">escalate only survivors</b> to higher&#8209;quality co&#8209;folders through free/low&#8209;cost APIs, and let several models vote. Broad&#8209;and&#8209;cheap first, narrow&#8209;and&#8209;accurate last.</p>
+    </div>
+  </div>
+
+  <div class="callout"><div class="t">The core idea</div>
+  Anthropic&#8217;s published recipe is a <b>multi&#8209;predictor consensus</b>: fold each design with several co&#8209;folders, keep those all the models agree on, rank by a weighted <span class="mono">ipSAE&nbsp;+&nbsp;sc_DockQ</span> z&#8209;score. We keep that logic intact but <b>stage it by cost</b> so it fits in 8&nbsp;GB: a free local model does the coarse triage, paid/borrowed accuracy is reserved for the shortlist.</p>
+</div></section>
+
+<section id="colabfold"><div class="wrap">
+  <p class="kicker">02 &middot; Is a cheap ColabFold pass a valid filter?</p>
+  <h2>Making localColabFold a legitimate first screen</h2>
+  <p class="sub">Before trusting a recycle&#8209;1 local fold to throw candidates away, two things had to be established: that the interface metrics are computed <em>identically</em> to the reference method, and that the low&#8209;recycle backbone artefacts do not corrupt them.</p>
+
+  <h3>Same metrics, same code path</h3>
+  <p>Both screening metrics are computed exactly as in the dataset methodology, from the localColabFold complex prediction (chain&nbsp;A = PD&#8209;L1 target, chain&nbsp;B = designed binder):</p>
+  <ul class="clean">
+    <li><b>ipSAE<sub>min</sub></b> &mdash; the interface&#8209;pyramid score of Dunbrack&#8217;s <span class="mono">ipsae.py</span> (<span class="mono">pae_cutoff&nbsp;10, dist&nbsp;10</span>), read from the two <span class="mono">asym</span> rows (A&#8594;B and B&#8594;A) and taking the <b>minimum of the two directions</b> per structure &mdash; the same definition the reference uses per predictor. It is a pure&#8209;PAE quantity, so it is <b>invariant to relaxation</b> (verified &Delta;&nbsp;=&nbsp;0.0000).</li>
+    <li><b>sc_DockQ</b> &mdash; DockQ (v2.1.3) of the predicted pose against the <em>designed</em> backbone, i.e. how faithfully the co&#8209;folder reproduces the intended docking geometry.</li>
+  </ul>
+
+  <div class="callout warn"><div class="t">Lesson that changed the numbers: relax the backbone, not just side chains</div>
+  Recycle&#8209;1 structures carry small backbone clashes. An early side&#8209;chain&#8209;only relax left those clashes in place and produced <b>false &ldquo;clash blow&#8209;ups&rdquo;</b> in &Delta;&Delta;G (up to +5,776&nbsp;REU). Switching to a <b>coordinate&#8209;constrained full relax</b> (<span class="mono">FastRelax</span> with backbone + &chi; free, restrained to start coords) removed every artefact. Interface metrics (ipSAE, sc_DockQ) were essentially unchanged by relaxation &mdash; confirming the triage ranking is robust &mdash; while &Delta;&Delta;G/CMS only become meaningful <em>after</em> the constrained relax.</div>
+
+  <p class="src">Source labels used throughout: <b>localColabFold</b> = our AF2&#8209;multimer recycle&#8209;1 predictions and metrics; <b>dataset</b> = the reference Anthropic PD&#8209;L1 design set and its published per&#8209;model metrics. Comparisons are always local&#8209;vs&#8209;dataset, never framed as two competing authors.</p>
+</div></section>
+
+<section id="build"><div class="wrap">
+  <p class="kicker">01 &middot; Generation</p>
+  <h2>Backbones, sequences, and the pre&#8209;scoring gate</h2>
+  <p class="sub">Everything upstream of the complex screen &mdash; how 52 RFdiffusion backbones became the 1,050 folded, diverse candidates that the rest of the report starts from.</p>
+
+  <div class="stats" id="genStats"></div>
+
+  <h3>1 &middot; RFdiffusion &rarr; 52 backbones</h3>
+  <p>Binder backbones were generated with RFdiffusion against the PD&#8209;1&#8209;binding face of PD&#8209;L1, seeded from three crystal complexes &mdash; <span class="mono">5C3T</span>, <span class="mono">4ZQK</span>, <span class="mono">4Z18</span> &mdash; plus a set of de novo <span class="mono">pdl1_binder</span> scaffolds, with hotspot residues fixed on the PD&#8209;1 epitope (Y56 / R113 / M115 / Y123). 52 diverse backbones were carried forward.</p>
+
+  <h3>2 &middot; ProteinMPNN + SolubleMPNN &rarr; 4,905 sequences</h3>
+  <p>Every backbone was sequence&#8209;designed by <b>both</b> ProteinMPNN and SolubleMPNN at sampling temperature 0.2, giving 4,905 sequences (2,716 Soluble / 2,189 Protein). A per&#8209;backbone cap trimmed these to a 2,481&#8209;sequence candidate pool (6&ndash;97 sequences per backbone), each assigned a stable <span class="mono">candNNNNN</span> id. The pool is spread across the four scaffold families:</p>
+  <div class="chart" id="tmplChart"></div>
+
+  <h3>3 &middot; ColabFold monomer foldability &rarr; 2,162</h3>
+  <p>All 2,481 candidates were folded as monomers with localColabFold. The gate is deliberately loose &mdash; <span class="mono">pLDDT &ge; 70</span>, the dataset default &mdash; because monomer foldability is only a sanity check, not the ranking signal (binder quality is decided later at the complex stage). Median monomer pLDDT was <b>91.7</b>; 93.5% cleared the pLDDT bar and <b>2,162</b> passed the full gate. SolubleMPNN folded slightly better than ProteinMPNN (median 93.0 vs 90.3) &mdash; expected, since it biases toward soluble, stable sequences.</p>
+
+  <h3>4 &middot; Redundancy &amp; diversity down&#8209;sample &rarr; 1,050</h3>
+  <p>Finally the pool was de&#8209;duplicated and diversity&#8209;reduced by sequence identity. Exact&#8209;redundancy dedup at 90% identity removed <b>0</b> sequences &mdash; 52 diverse backbones at MPNN temperature 0.2 simply produce no near&#8209;duplicates. The real reducer is diversity down&#8209;sampling at <b>70% identity</b>, keeping the best&#8209;folding representative per cluster, which collapsed the 2,162 survivors into the <b>1,050</b> complexes that entered the co&#8209;fold screen.</p>
+  <div class="callout"><div class="t">Honest note on filter ordering</div>
+  Ideally the millisecond&#8209;cheap sequence filters (dedup, liability, novelty) run <em>before</em> any GPU folding. Here the monomer screen ran first and dedup/liability after &mdash; but because 90% dedup removed nothing, no folding compute was actually wasted (luck, not design). The 70% diversity step is deliberately kept <em>after</em> monomer folding, so the representative chosen per cluster is the best&#8209;folding one (which needs the pLDDT/pTM scores) rather than a blind pick by MPNN score.</div>
+</div></section>
+
+<section id="pipeline"><div class="wrap">
+  <p class="kicker">03 &middot; Pipeline</p>
+  <h2>End&#8209;to&#8209;end, backbones to a ranked top&#8209;30</h2>
+  <p class="sub">Each stage removes what the next, more expensive stage would waste effort on. Every count below is exact.</p>
+  <div class="chart" id="funnelChart"></div>
+  <div class="grid3" style="margin-top:16px">
+    <div class="card"><h3 style="margin:0 0 6px;font-size:15px">Generate (local, free)</h3><p style="font-size:13px;color:var(--ink-soft);margin:0">RFdiffusion (52 backbones) &rarr; ProteinMPNN + SolubleMPNN (4,905 seqs) &rarr; monomer gate + 70% diversity &rarr; 1,050.</p></div>
+    <div class="card"><h3 style="margin:0 0 6px;font-size:15px">Triage &amp; curate (local, free)</h3><p style="font-size:13px;color:var(--ink-soft);margin:0">1,050 localColabFold co&#8209;folds &rarr; two&#8209;stage ipSAE / sc_DockQ (157) &rarr; liability + clustering &rarr; 50.</p></div>
+    <div class="card"><h3 style="margin:0 0 6px;font-size:15px">Consensus (cloud, escalated)</h3><p style="font-size:13px;color:var(--ink-soft);margin:0">Boltz&#8209;2 + ESMFold2&#8209;Full + Protenix must all agree on the pose &rarr; 43 &rarr; z&#8209;rank &rarr; top&#8209;30.</p></div>
+  </div>
+</div></section>
+
+<section id="results"><div class="wrap">
+  <p class="kicker">04 &middot; Results by stage</p>
+  <h2>What each gate did</h2>
+  <p class="sub">The two charts below show the two decisive filters: the multi&#8209;model pose agreement that defines the 43, and the weighted z&#8209;score that ranks them.</p>
+
+  <h3>Multi&#8209;predictor pose agreement &rarr; 43 survivors</h3>
+  <p class="lead-in" style="color:var(--ink-soft);font-size:14.5px">Each of the 48 shortlisted designs was folded by three independent cloud co&#8209;folders. A design passes only if <b>all three</b> reproduce the docking geometry at <span class="mono">sc_DockQ &ge; 0.23</span> (the dataset&#8217;s pose&#8209;PASS threshold). The scatter plots Boltz&#8209;2 vs ESMFold2&#8209;Full; red points that sit in the top&#8209;right &ldquo;both&#8209;pass&rdquo; box are the designs that <b>Protenix</b> nonetheless rejected &mdash; the value of a third opinion.</p>
+  <div class="grid2" style="margin-top:14px">
+    <div class="chart" id="poseChart"></div>
+    <div class="chart" id="zChart"></div>
+  </div>
+
+  <div class="stats" id="resStats"></div>
+  <div class="callout"><div class="t">Reading the z&#8209;score distribution</div>
+  Composite&nbsp;z&nbsp;=&nbsp;<span class="mono">4&middot;z(ipSAE) + 1&middot;z(sc_DockQ)</span>, the dataset&#8217;s 4:1 weighting, computed across the 43. A clear leading cluster (z&nbsp;&gt;&nbsp;+3, the top&nbsp;~10) sits apart; ranks 11&ndash;40 taper smoothly; three designs fall off a cliff at the bottom (a 4.7&#8209;point gap after rank&nbsp;40) where the co&#8209;folders openly disagree. The natural cuts are <b>top&#8209;10</b> (safest), <b>top&#8209;30</b> (dataset&#8209;style per&#8209;target quota), and &ldquo;drop the bottom&nbsp;3&rdquo; regardless.</p>
+</div></section>
+
+<section id="top30"><div class="wrap">
+  <p class="kicker">05 &middot; The shortlist</p>
+  <h2>Top&#8209;30 designs &amp; predicted complexes</h2>
+  <p class="sub">Ranked by composite z&#8209;score. Structures are the localColabFold co&#8209;fold complexes &mdash; <span style="color:var(--target);font-weight:600">PD&#8209;L1 target in sand</span>, <span style="color:var(--accent-deep);font-weight:600">designed binder in teal</span>, binder interface side chains highlighted. Drag to rotate.</p>
+
+  <h3>Featured &mdash; the top 6</h3>
+  <div class="featgrid" id="featGrid"></div>
+
+  <h3 style="margin-top:34px">Explore all 30</h3>
+  <p style="color:var(--ink-soft);font-size:14px;margin-top:0">Click any design to load its predicted complex.</p>
+  <div class="explorer">
+    <div id="bigviewer"><div class="badge" id="bigBadge">&mdash;</div></div>
+    <div class="side">
+      <div class="controls">
+        <button id="btnSpin">Spin</button>
+        <button id="btnSurf">Target surface</button>
+        <button id="btnIface" class="on">Interface</button>
+      </div>
+      <div class="picklist" id="pickList"></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:34px">Full ranking table</h3>
+  <div class="tbl-wrap"><table id="rankTable"></table></div>
+  <p class="src">ipSAE and sc_DockQ columns are per&#8209;predictor averages over the cloud co&#8209;folders (localColabFold anchors the earlier triage). &ldquo;method&rdquo; = the sequence&#8209;design model for that backbone (ProteinMPNN / SolubleMPNN).</p>
+</div></section>
+
+<section id="novelty"><div class="wrap">
+  <p class="kicker">06 &middot; Novelty</p>
+  <h2>Are these just rediscoveries?</h2>
+  <p class="sub">No. Every one of the 43 survivors &mdash; and all of the top&#8209;30 &mdash; is a genuinely new sequence relative to the reference PD&#8209;L1 design set.</p>
+
+  <div class="stats" id="novStats"></div>
+  <p>Each survivor&#8217;s sequence was aligned (global, BLOSUM62) against all <b>90</b> dataset PD&#8209;L1 designs. The maximum identity to any reference design, over the entire top&#8209;30, is <b>44.6%</b>; most sit near 33&ndash;40%. Nothing approaches the &ge;50% identity / &ge;50% coverage band that the dataset methodology treats as a redundancy hit. In short: the pipeline is <b>finding new solutions to the same epitope</b>, not memorising the reference binders.</p>
+  <div class="callout"><div class="t">Context from the dataset</div>
+  The reference PD&#8209;L1 set contains <b id="nvA">90</b> designs, of which <b id="nvB">39</b> are experimentally confirmed binders spanning Kd <b id="nvC">0.6&ndash;2618&nbsp;nM</b>. Reassuringly, for <b>13 of our top&#8209;30</b> the nearest (still &lt;45% identical) reference neighbour is one of those confirmed binders &mdash; the novel designs cluster in a region of sequence space that is known to yield real binders.</div>
+  <div class="tbl-wrap"><table id="novTable"></table></div>
+  <p class="src">Note on external novelty: the dataset recipe also screens novelty against UniRef90 (MMseqs2, reject &gt;60% id / &gt;50% cov or TM&nbsp;&ge;&nbsp;0.5). Every free search server for that step was unreachable during this work (search.mmseqs.com down, NCBI rate&#8209;blocked, EBI endpoints gated), and the throttled bandwidth made a local UniRef90 build infeasible, so external novelty was substituted by this internal identity check against the dataset itself.</p>
+</div></section>
+
+<section id="tips"><div class="wrap">
+  <p class="kicker">07 &middot; Field notes</p>
+  <h2>Lessons &amp; small tips</h2>
+  <p class="sub">The things that actually cost time, and what fixed them &mdash; mostly about running a research stack on a constrained Windows/WSL box.</p>
+  <div class="tipgrid" id="tipGrid"></div>
+</div></section>
+
+</main>
+
+<footer><div class="wrap">
+  <div>Report generated 2026&#8209;09&#8209;02 &middot; localColabFold triage + Boltz&#8209;2 / ESMFold2&#8209;Full / Protenix consensus &middot; single RTX&nbsp;3070&nbsp;Ti (8&nbsp;GB), WSL2/Ubuntu.</div>
+  <div>Structure viewers: 3Dmol.js. Metrics: Dunbrack ipSAE, DockQ, PyRosetta. Reference methodology: Anthropic de novo binder&#8209;design study.</div>
+</div></footer>
+
+<script>const DATA=/*__DATA__*/;</script>
+<script>
+(function(){
+"use strict";
+var D=DATA, designs=D.designs, all48=D.all48;
+var CS=getComputedStyle(document.documentElement);
+function cv(n){return CS.getPropertyValue(n).trim();}
+
+/* ---------- theme ---------- */
+var tb=document.getElementById('themebtn');
+function apply(t){ if(t) document.documentElement.setAttribute('data-theme',t); }
+try{ apply(localStorage.getItem('pdl1theme')); }catch(e){}
+tb.addEventListener('click',function(){
+  var cur=document.documentElement.getAttribute('data-theme');
+  var mql=window.matchMedia('(prefers-color-scheme:dark)');
+  var isDark = cur? cur==='dark' : mql.matches;
+  var nt=isDark?'light':'dark';
+  document.documentElement.setAttribute('data-theme',nt);
+  try{localStorage.setItem('pdl1theme',nt);}catch(e){}
+});
+
+/* ---------- meta chips ---------- */
+var f=D.funnel;
+document.getElementById('meta').innerHTML=[
+  ['Target','PD&#8209;L1 (CD274)'],['Complexes co&#8209;folded',f.cofold.toLocaleString()],
+  ['Co&#8209;folders','4 (1 local + 3 cloud)'],['Final shortlist','43 &rarr; top&#8209;30'],
+  ['GPU','RTX&nbsp;3070&nbsp;Ti &middot; 8&nbsp;GB'],['Author','trkythanh']
+].map(function(x){return '<span class="chip"><b>'+x[1]+'</b> &middot; '+x[0]+'</span>';}).join('');
+
+/* ---------- helpers for SVG ---------- */
+function el(tag,at,kids){var e=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  for(var k in at)e.setAttribute(k,at[k]); if(kids)kids.forEach(function(c){e.appendChild(c);}); return e;}
+function txt(x,y,s,st){var t=el('text',{x:x,y:y,style:st||''});t.textContent=s;return t;}
+
+/* ---------- funnel ---------- */
+(function(){
+  var stages=[['MPNN sequences (2 methods)',4905],['Candidate pool',2481],
+    ['Monomer foldability gate',2162],['Diversity down&#8209;sample 70%',f.cofold],
+    ['Stage&#8209;1 ipSAE gate',f.stage1],['Stage&#8209;2 + sc_DockQ',f.stage2],
+    ['Curated (liability+cluster)',f.selected],['3&#8209;model co&#8209;fold',f.threemodel],
+    ['Pose&#8209;PASS (all 3)',f.posepass],['Reported top',30]];
+  var W=920,rh=34,gap=8,padL=230,padR=72,H=stages.length*(rh+gap)+8;
+  var max=4905, bw=W-padL-padR;
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',style:'display:block'});
+  stages.forEach(function(s,i){
+    var y=i*(rh+gap)+4, w=Math.max(bw*(s[1]/max),bw*0.03)+0;
+    // full track
+    svg.appendChild(el('rect',{x:padL,y:y,width:bw,height:rh,rx:7,style:'fill:var(--surface-2)'}));
+    svg.appendChild(el('rect',{x:padL,y:y,width:w,height:rh,rx:7,style:'fill:var(--accent);opacity:'+(1-i*0.09)}));
+    svg.appendChild(txt(padL-12,y+rh/2+5,s[0],'fill:var(--ink);font-size:14px;font-family:IBM Plex Sans;font-weight:500;text-anchor:end'));
+    svg.appendChild(txt(padL+w+10,y+rh/2+5,s[1].toLocaleString(),'fill:var(--ink);font-size:15px;font-family:IBM Plex Mono;font-weight:500'));
+    var pct=(100*s[1]/max);
+    svg.appendChild(txt(padL+bw+4,y+rh/2+5,pct>=1?pct.toFixed(pct<10?1:0)+'%':pct.toFixed(1)+'%','fill:var(--ink-faint);font-size:11px;font-family:IBM Plex Mono;text-anchor:start'));
+  });
+  var c=document.getElementById('funnelChart');
+  c.innerHTML='<div class="ct">Full screening funnel &mdash; 52 RFdiffusion backbones &rarr; top&#8209;30</div><div class="cc">Bar length &prop; count; right column = fraction of the 4,905 MPNN sequences retained. The 1,050 that enter the co&#8209;fold screen are the diversity down&#8209;sample.</div>';
+  c.appendChild(svg);
+})();
+
+/* ---------- generation stats + template families ---------- */
+document.getElementById('genStats').innerHTML=[
+  ['52','RFdiffusion backbones'],
+  ['4,905','MPNN sequences'],
+  ['2,481','candidate pool (monomer&#8209;folded)'],
+  ['1,050','diverse complexes co&#8209;folded']
+].map(function(s){return '<div class="stat"><div class="n">'+s[0]+'</div><div class="l">'+s[1]+'</div></div>';}).join('');
+(function(){
+  var fam=[['5C3T (crystal)',854],['4Z18 (crystal)',769],['4ZQK (crystal)',664],['pdl1_binder (de novo)',194]];
+  var W=920,rh=30,gap=10,padL=200,padR=64,H=fam.length*(rh+gap)+6,max=854,bw=W-padL-padR;
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',style:'display:block'});
+  fam.forEach(function(s,i){
+    var y=i*(rh+gap)+3,w=Math.max(bw*(s[1]/max),bw*0.02);
+    svg.appendChild(el('rect',{x:padL,y:y,width:bw,height:rh,rx:6,style:'fill:var(--surface-2)'}));
+    svg.appendChild(el('rect',{x:padL,y:y,width:w,height:rh,rx:6,style:'fill:var(--target)'}));
+    svg.appendChild(txt(padL-12,y+rh/2+5,s[0],'fill:var(--ink);font-size:13px;font-family:IBM Plex Mono;text-anchor:end'));
+    svg.appendChild(txt(padL+w+9,y+rh/2+5,s[1].toLocaleString(),'fill:var(--ink);font-size:14px;font-family:IBM Plex Mono;font-weight:500'));
+  });
+  var c=document.getElementById('tmplChart');
+  c.innerHTML='<div class="ct">Candidate pool by scaffold family (n=2,481)</div><div class="cc">RFdiffusion seeds: three PD&#8209;L1 crystal complexes + de novo scaffolds.</div>';
+  c.appendChild(svg);
+})();
+
+/* ---------- pose scatter ---------- */
+(function(){
+  var W=440,H=380,p=48;
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',style:'display:block'});
+  function X(v){return p+ (v)*(W-p-14);} function Y(v){return H-p-(v)*(H-p-14);}
+  // grid
+  [0,.25,.5,.75,1].forEach(function(t){
+    svg.appendChild(el('line',{x1:X(t),y1:Y(0),x2:X(t),y2:Y(1),style:'stroke:var(--line-soft)'}));
+    svg.appendChild(el('line',{x1:X(0),y1:Y(t),x2:X(1),y2:Y(t),style:'stroke:var(--line-soft)'}));
+    svg.appendChild(txt(X(t),H-p+16,t.toFixed(2),'fill:var(--ink-faint);font-size:10px;font-family:IBM Plex Mono;text-anchor:middle'));
+    svg.appendChild(txt(p-8,Y(t)+3,t.toFixed(2),'fill:var(--ink-faint);font-size:10px;font-family:IBM Plex Mono;text-anchor:end'));
+  });
+  // gate lines at .23
+  svg.appendChild(el('line',{x1:X(0.23),y1:Y(0),x2:X(0.23),y2:Y(1),style:'stroke:var(--warn);stroke-dasharray:4 3;opacity:.8'}));
+  svg.appendChild(el('line',{x1:X(0),y1:Y(0.23),x2:X(1),y2:Y(0.23),style:'stroke:var(--warn);stroke-dasharray:4 3;opacity:.8'}));
+  all48.forEach(function(d){
+    var pass=d.pose===1;
+    var pxfail = !pass && d.bz_scdq>=0.23 && d.ef_scdq>=0.23; // in-box but protenix rejected
+    var col = pass?'var(--pass)':(pxfail?'var(--fail)':'var(--ink-faint)');
+    svg.appendChild(el('circle',{cx:X(d.bz_scdq),cy:Y(d.ef_scdq),r:pxfail?5.5:4.5,
+      style:'fill:'+col+';opacity:'+(pass?0.85:0.95)+';stroke:var(--surface);stroke-width:1'}));
+  });
+  svg.appendChild(txt(W/2,H-8,'sc_DockQ &mdash; Boltz&#8209;2','fill:var(--ink-soft);font-size:12px;text-anchor:middle;font-family:IBM Plex Sans'));
+  var yl=el('text',{x:14,y:H/2,style:'fill:var(--ink-soft);font-size:12px;text-anchor:middle;font-family:IBM Plex Sans',transform:'rotate(-90 14 '+(H/2)+')'});yl.textContent='sc_DockQ — ESMFold2‑Full';svg.appendChild(yl);
+  var c=document.getElementById('poseChart');
+  c.innerHTML='<div class="ct">Pose agreement (n=48)</div><div class="cc">Both&#8209;pass box = top&#8209;right of the dashed 0.23 gates.</div>';
+  c.appendChild(svg);
+  c.insertAdjacentHTML('beforeend','<div class="legend"><span><i class="dot" style="background:var(--pass)"></i>kept (all 3 pass) &middot; 43</span><span><i class="dot" style="background:var(--fail)"></i>Protenix rejected in&#8209;box</span><span><i class="dot" style="background:var(--ink-faint)"></i>failed Boltz/ESM</span></div>');
+})();
+
+/* ---------- z ranked bar ---------- */
+(function(){
+  var arr=designs.slice().sort(function(a,b){return a.rank-b.rank;});
+  var W=440,H=380,p=40, n=arr.length;
+  var vals=arr.map(function(d){return d.composite;});
+  var mx=Math.max.apply(null,vals), mn=Math.min.apply(null,vals);
+  var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',style:'display:block'});
+  var bw=(W-p-10)/n;
+  function Y(v){return (H-24) - ( (v-mn)/(mx-mn) )*(H-24-14);}
+  var y0=Y(0);
+  svg.appendChild(el('line',{x1:p,y1:y0,x2:W-6,y2:y0,style:'stroke:var(--ink-faint)'}));
+  arr.forEach(function(d,i){
+    var x=p+i*bw, y=Y(d.composite);
+    var col=d.rank<=10?'var(--accent)':(d.rank<=30?'#7aa9a3':'var(--ink-faint)');
+    var top=Math.min(y,y0), h=Math.abs(y-y0);
+    svg.appendChild(el('rect',{x:x,y:top,width:Math.max(bw-1.2,1),height:Math.max(h,0.6),style:'fill:'+col}));
+  });
+  // top10/top30 markers
+  [[10,'top 10'],[30,'top 30']].forEach(function(m){
+    var x=p+m[0]*bw;
+    svg.appendChild(el('line',{x1:x,y1:14,x2:x,y2:H-22,style:'stroke:var(--ink-soft);stroke-dasharray:3 3;opacity:.5'}));
+    svg.appendChild(txt(x+3,24,m[1],'fill:var(--ink-soft);font-size:10px;font-family:IBM Plex Mono'));
+  });
+  svg.appendChild(txt(p-6,y0+3,'0','fill:var(--ink-faint);font-size:10px;font-family:IBM Plex Mono;text-anchor:end'));
+  svg.appendChild(txt(p-6,Y(mx)+8,'+'+mx.toFixed(1),'fill:var(--ink-faint);font-size:10px;font-family:IBM Plex Mono;text-anchor:end'));
+  svg.appendChild(txt(p-6,Y(mn)+2,mn.toFixed(1),'fill:var(--ink-faint);font-size:10px;font-family:IBM Plex Mono;text-anchor:end'));
+  svg.appendChild(txt(W/2,H-6,'rank (1 &rarr; 43)','fill:var(--ink-soft);font-size:12px;text-anchor:middle;font-family:IBM Plex Sans'));
+  var c=document.getElementById('zChart');
+  c.innerHTML='<div class="ct">Composite z&#8209;score, ranked (n=43)</div><div class="cc">4&middot;z(ipSAE)+1&middot;z(sc_DockQ). Note the drop after rank 40.</div>';
+  c.appendChild(svg);
+  c.insertAdjacentHTML('beforeend','<div class="legend"><span><i class="dot" style="background:var(--accent)"></i>top 10</span><span><i class="dot" style="background:#7aa9a3"></i>11&ndash;30</span><span><i class="dot" style="background:var(--ink-faint)"></i>31&ndash;43</span></div>');
+})();
+
+/* ---------- result stats ---------- */
+document.getElementById('resStats').innerHTML=[
+  [f.stage2,'passed Stage&#8209;2 (ipSAE + sc_DockQ)'],
+  [f.posepass,'passed all 3 cloud co&#8209;folders'],
+  ['4:1','ipSAE : sc_DockQ z&#8209;weight'],
+  ['+6.04','best composite z (cand00169)']
+].map(function(s){return '<div class="stat"><div class="n">'+s[0]+'</div><div class="l">'+s[1]+'</div></div>';}).join('');
+
+/* ---------- novelty stats & table ---------- */
+document.getElementById('nvA').textContent=D.anth_pdl1;
+document.getElementById('nvB').textContent=D.anth_conf;
+document.getElementById('novStats').innerHTML=[
+  ['44.6%','max identity to any reference (top&#8209;30)'],
+  ['&lt;45%','all 43 survivors'],
+  ['0','crossing the &ge;50% redundancy band'],
+  ['13 / 30','nearest reference is a confirmed binder']
+].map(function(s){return '<div class="stat"><div class="n">'+s[0]+'</div><div class="l">'+s[1]+'</div></div>';}).join('');
+
+(function(){
+  var t=document.getElementById('novTable');
+  var head='<thead><tr><th>rank</th><th>design</th><th class="num">len</th><th class="num">max id&nbsp;%</th><th>nearest reference design</th><th>confirmed?</th><th class="num">its&nbsp;Kd&nbsp;nM</th></tr></thead>';
+  var rows=designs.slice(0,30).map(function(d){
+    var nm=(d.nov_match||'').replace(/_/g,'​_');
+    return '<tr'+(d.rank<=10?' class="top10"':'')+'><td class="rk">'+d.rank+'</td><td class="mono">'+d.cand+'</td><td class="num">'+d.length+'</td><td class="num">'+d.nov_id.toFixed(1)+'</td><td style="text-align:left;font-family:IBM Plex Mono;font-size:11.5px;color:var(--ink-soft)">'+nm+'</td><td>'+(d.nov_isbinder?'<span style="color:var(--pass);font-weight:600">yes</span>':'&mdash;')+'</td><td class="num">'+(d.nov_kd!=null?d.nov_kd:'&mdash;')+'</td></tr>';
+  }).join('');
+  t.innerHTML=head+'<tbody>'+rows+'</tbody>';
+})();
+
+/* ---------- rank table ---------- */
+(function(){
+  var t=document.getElementById('rankTable');
+  var head='<thead><tr><th>rank</th><th>design</th><th class="num">z</th><th class="num">ipSAE</th><th class="num">sc_DockQ</th><th class="num">Boltz&nbsp;ipSAE</th><th class="num">ESM&nbsp;ipSAE</th><th class="num">len</th><th>backbone</th><th>method</th><th class="num">id%</th></tr></thead>';
+  var rows=designs.slice(0,30).map(function(d){
+    var mt=d.method.toLowerCase().indexOf('soluble')>=0?'<span class="tag smpnn">Soluble</span>':'<span class="tag mpnn">Protein</span>';
+    return '<tr'+(d.rank<=10?' class="top10"':'')+'><td class="rk">'+d.rank+'</td><td class="mono">'+d.cand+'</td><td class="num" style="color:var(--accent-deep);font-weight:600">'+(d.composite>=0?'+':'')+d.composite.toFixed(2)+'</td><td class="num">'+d.ipsae_avg.toFixed(3)+'</td><td class="num">'+d.scdq_avg.toFixed(3)+'</td><td class="num">'+d.bz_ipsae.toFixed(3)+'</td><td class="num">'+d.ef_ipsae.toFixed(3)+'</td><td class="num">'+d.length+'</td><td style="text-align:left;font-family:IBM Plex Mono;font-size:12px;color:var(--ink-soft)">'+d.backbone+'</td><td style="text-align:left">'+mt+'</td><td class="num">'+d.nov_id.toFixed(0)+'</td></tr>';
+  }).join('');
+  t.innerHTML=head+'<tbody>'+rows+'</tbody>';
+})();
+
+/* ---------- 3Dmol ---------- */
+var TCOL=cv('--target')||'#a99a80', BCOL=cv('--accent-deep')||'#0a6d64', IFCOL='#e0a24a';
+function chainSplit(model){
+  var atoms=model.selectedAtoms({});
+  var per={};
+  atoms.forEach(function(a){ if(!per[a.chain])per[a.chain]=new Set(); per[a.chain].add(a.resi); });
+  var chains=Object.keys(per);
+  chains.sort(function(a,b){return per[b].size-per[a].size;});
+  return {target:chains[0]||'A', binder:chains[1]||chains[0]||'B'};
+}
+function styleComplex(v,cs,opt){
+  opt=opt||{};
+  v.setStyle({},{});
+  v.setStyle({chain:cs.target},{cartoon:{color:TCOL,opacity:1,thickness:0.5}});
+  v.setStyle({chain:cs.binder},{cartoon:{color:BCOL,thickness:0.7,arrows:true}});
+  if(opt.iface!==false){
+    v.setStyle({chain:cs.binder, byres:true, within:{distance:5,sel:{chain:cs.target}}},
+      {cartoon:{color:BCOL,thickness:0.7,arrows:true},stick:{radius:0.16,colorscheme:'default'}});
+    v.setStyle({chain:cs.binder, byres:true, within:{distance:5,sel:{chain:cs.target}}, atom:['CA','C','N','O','CB','CG','CD','CE','CZ','OG','OH','NZ','ND','NE','SD','SG','OD1','OD2','OE1','OE2','NH1','NH2']},
+      {cartoon:{color:BCOL,thickness:0.7,arrows:true},stick:{radius:0.16,color:IFCOL}});
+  }
+  if(opt.surf){ try{ v.addSurface($3Dmol.SurfaceType.VDW,{opacity:0.5,color:TCOL},{chain:cs.target}); }catch(e){} }
+}
+function mkViewer(elm,pdb,opt){
+  var v=$3Dmol.createViewer(elm,{backgroundColor:cv('--viewer-bg')||'#0d1512',antialias:true});
+  var m=v.addModel(pdb,'pdb');
+  var cs=chainSplit(m);
+  styleComplex(v,cs,opt||{});
+  v.zoomTo(); v.render();
+  return {v:v,cs:cs};
+}
+
+/* featured top 6 — lazy via IntersectionObserver */
+(function(){
+  var g=document.getElementById('featGrid');
+  designs.slice(0,6).forEach(function(d){
+    var card=document.createElement('div'); card.className='viewcard';
+    var mt=d.method.toLowerCase().indexOf('soluble')>=0?'SolubleMPNN':'ProteinMPNN';
+    card.innerHTML='<div class="viewer" data-cand="'+d.cand+'"><div class="badge">#'+d.rank+' &middot; '+d.cand+'</div><div class="hint">drag</div></div>'+
+      '<div class="cap"><div class="h"><b>'+d.cand+'</b><span class="z">'+(d.composite>=0?'+':'')+d.composite.toFixed(2)+'</span></div>'+
+      '<div class="m"><span>ipSAE <b>'+d.ipsae_avg.toFixed(3)+'</b></span><span>sc_DockQ <b>'+d.scdq_avg.toFixed(3)+'</b></span><span>'+d.length+' aa</span></div>'+
+      '<div class="m" style="margin-top:2px"><span style="color:var(--ink-faint)">'+d.backbone+' &middot; '+mt+' &middot; id '+d.nov_id.toFixed(0)+'%</span></div></div>';
+    g.appendChild(card);
+    d._el=card.querySelector('.viewer');
+  });
+  var io=new IntersectionObserver(function(ents){
+    ents.forEach(function(en){
+      if(en.isIntersecting){
+        var elm=en.target, cand=elm.getAttribute('data-cand');
+        var d=designs.find(function(x){return x.cand===cand;});
+        if(d && d.pdb && !d._done){ d._done=true; try{ mkViewer(elm,d.pdb,{iface:true}); }catch(e){ elm.innerHTML+='<div style="color:#fbb;padding:10px;font-size:11px">viewer error</div>'; } }
+        io.unobserve(elm);
+      }
+    });
+  },{rootMargin:'120px'});
+  designs.slice(0,6).forEach(function(d){ if(d._el) io.observe(d._el); });
+})();
+
+/* explorer big viewer */
+(function(){
+  var host=document.getElementById('bigviewer'), badge=document.getElementById('bigBadge');
+  var pl=document.getElementById('pickList');
+  var cur=null, state={spin:false,surf:false,iface:true};
+  var top=designs.slice(0,30);
+  top.forEach(function(d){
+    var b=document.createElement('button');
+    b.innerHTML='<span><span class="c">#'+d.rank+'</span> '+d.cand+'</span><span class="z">'+(d.composite>=0?'+':'')+d.composite.toFixed(2)+'</span>';
+    b.addEventListener('click',function(){ load(d,b); });
+    d._pick=b; pl.appendChild(b);
+  });
+  function load(d,b){
+    if(!d.pdb) return;
+    document.querySelectorAll('#pickList .sel').forEach(function(x){x.classList.remove('sel');});
+    if(b)b.classList.add('sel');
+    host.querySelectorAll('canvas').forEach(function(c){c.remove()});
+    badge.innerHTML='#'+d.rank+' &middot; '+d.cand+' &middot; z '+(d.composite>=0?'+':'')+d.composite.toFixed(2);
+    try{
+      cur=mkViewer(host,d.pdb,{iface:state.iface,surf:state.surf});
+      if(state.spin)cur.v.spin('y',0.6);
+    }catch(e){}
+  }
+  function restyle(){ if(!cur)return; cur.v.removeAllSurfaces(); styleComplex(cur.v,cur.cs,{iface:state.iface,surf:state.surf}); cur.v.render(); }
+  document.getElementById('btnSpin').addEventListener('click',function(){
+    state.spin=!state.spin; this.classList.toggle('on',state.spin);
+    if(cur){ cur.v.spin(state.spin?'y':false, 0.6); }
+  });
+  document.getElementById('btnSurf').addEventListener('click',function(){
+    state.surf=!state.surf; this.classList.toggle('on',state.surf); restyle();
+  });
+  document.getElementById('btnIface').addEventListener('click',function(){
+    state.iface=!state.iface; this.classList.toggle('on',state.iface); restyle();
+  });
+  // init on view
+  var io=new IntersectionObserver(function(e){ if(e[0].isIntersecting){ load(top[0],top[0]._pick); io.disconnect(); } },{rootMargin:'150px'});
+  io.observe(host);
+})();
+
+/* ---------- tips ---------- */
+var tips=[
+  ['&#9889;','Stage by cost, not by taste','8&nbsp;GB cannot fold everything well. Run one cheap local co&#8209;fold on all 1,050, then spend accurate cloud compute only on the ~50 that survive. The expensive models never see a hopeless design.'],
+  ['&#127919;','Seed RFdiffusion from a real epitope','Backbones were grown against the PD&#8209;1&#8209;binding face of PD&#8209;L1 from three crystal complexes (5C3T / 4ZQK / 4Z18) plus de novo scaffolds, hotspots Y56 / R113 / M115 / Y123 fixed. Anchoring on a known epitope keeps the entire downstream funnel pointed at a bindable surface.'],
+  ['&#129516;','SolubleMPNN folds better than ProteinMPNN','On identical backbones, SolubleMPNN gave a higher monomer pLDDT (median 93.0 vs 90.3; 90% vs 84% clear the gate) &mdash; it biases toward soluble, stable sequences. Useful upstream, but not yet evidence of better <em>binding</em>: that is decided at the complex stage.'],
+  ['&#128137;','Monomer foldability barely discriminates','pLDDT and pTM are strongly correlated (r&nbsp;0.88&ndash;0.91), and MPNN sequences fold well as monomers almost by construction (median 91.7; 93.5% &ge;&nbsp;70). Keep the gate loose (pLDDT&nbsp;&ge;&nbsp;70) &mdash; over&#8209;filtering here discards good binders for no real signal.'],
+  ['&#128203;','Cheap filters first &mdash; but check they bite','Textbook order runs dedup / liability / novelty before any GPU fold. Confirm they actually remove something: 90% dedup removed <b>0</b> here (diverse backbones, MPNN temp 0.2), so re&#8209;ordering would have saved zero folds. The step that truly shrinks the pool &mdash; 70% diversity &mdash; belongs <em>after</em> folding, so the cluster representative is the best&#8209;folding one.'],
+  ['&#129513;','Relax the backbone before &Delta;&Delta;G','Side&#8209;chain&#8209;only relax on recycle&#8209;1 structures invents clash blow&#8209;ups (&Delta;&Delta;G in the thousands). Use a coordinate&#8209;constrained <code>FastRelax</code> with backbone free. Interface metrics barely move &mdash; energy terms become usable.'],
+  ['&#128207;','ipSAE is min&#8209;of&#8209;both&#8209;directions','ipSAE<sub>min</sub> is the minimum of the A&#8594;B and B&#8594;A <code>asym</code> rows for one structure &mdash; not a min across models. Being pure&#8209;PAE, it is invariant to relaxation, so it is safe to compute once on the raw fold.'],
+  ['&#128260;','The numpy tug&#8209;of&#8209;war','DockQ&nbsp;2.1.3 needs <code>numpy&lt;2</code>; the ESM SDK needs <code>numpy&nbsp;2.x</code>. Pin <code>1.26.4</code> before scoring, flip to <code>2.5.2</code> before ESM folding. PyPI is fast &mdash; the toggle costs seconds.'],
+  ['&#128268;','Three opinions beat two','Boltz&#8209;2 and ESMFold2&#8209;Full agreed on 46 poses; adding Protenix as a third vote rejected 3 more (high Boltz/ESM sc_DockQ but Protenix &lt;0.23). A cheap third co&#8209;folder is the highest&#8209;value filter in the whole pipeline.'],
+  ['&#128421;','WSL hates aggressive polling','Tight <code>wsl.exe</code> polling that times out (SIGTERM) destabilises the VM and restarts it &mdash; wiping <code>/tmp</code>. Poll sparingly (20&ndash;30&nbsp;min), keep workers resumable, and never store anything you need in <code>/tmp</code>.'],
+  ['&#128273;','Know your free co&#8209;folders','ESMFold2&#8209;Full via Biohub Forge is free and PAE&#8209;capable (ipSAE works). Protenix via JapanFold is free but exposes no PAE (iptm + sc_DockQ only). Boltz&#8209;2 test keys return a mock fixture &mdash; only live keys fold real sequences.'],
+  ['&#129302;','PowerShell eats your shell metachars','<code>&lt;</code>, <code>|</code>, <code>$()</code> in a WSL command string get parsed by PowerShell first. Write the logic to a <code>.sh</code>/<code>.py</code> file and run it via its <code>/mnt/c/</code> path &mdash; far more reliable than escaping.']
+];
+document.getElementById('tipGrid').innerHTML=tips.map(function(t){
+  return '<div class="tip"><h4><span class="ic">'+t[0]+'</span>'+t[1]+'</h4><p>'+t[2]+'</p></div>';
+}).join('');
+
+})();
+</script>

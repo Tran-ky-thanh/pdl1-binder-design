@@ -1,0 +1,8 @@
+full_name,tier,binder_len,ds_consensus,ds_af3of3,ds_boltz2,wetlab_binder,kd_nM,cf_iptm,cf_ptm,cf_plddt,cf_plddt_binder,cf_ipsae_min,cf_ipsae_b2t,cf_scdockq_vs_design
+mythos_preview_single_target_pdl1_rank03,GOOD,100,0.886,0.868,0.938,True,0.6369169599183535,0.91,0.93,97.0,97.3,0.821,0.858,0.873
+mythos_preview_multi_target_pdl1_rank03,GOOD,75,0.88,0.849,0.925,True,46.64537973607225,0.91,0.93,97.2,98.1,0.803,0.866,0.938
+mythos_preview_single_target_pdl1_rank27,MID-binder,72,0.836,0.808,0.915,True,18.77797522416468,0.92,0.93,97.5,97.9,0.785,0.877,0.956
+mythos_preview_multi_target_pdl1_rank15,MID-nonbinder,75,0.831,0.768,0.898,False,,0.91,0.92,96.9,97.3,0.792,0.839,0.878
+opus_4_8_multi_target_pdl1_rank23,BAD,90,0.451,0.709,0.418,False,,0.29,0.64,87.0,86.3,0.019,0.019,0.189
+opus_4_8_multi_target_pdl1_rank27,BAD,90,0.259,0.0,0.731,False,,0.21,0.61,68.7,46.0,0.01,0.01,0.087
+opus_4_8_multi_target_pdl1_rank28,BAD-small,66,0.552,0.6549999713897705,0.8169999718666077,False,,0.58,0.8,89.3,85.3,0.194,0.27,0.048

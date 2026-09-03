@@ -1,0 +1,22 @@
+# Analysis / scoring environment for the PD-L1 binder pipeline.
+# Heavy design tools (RFdiffusion, ProteinMPNN, localColabFold, PyRosetta) are
+# installed separately — see README. PyRosetta requires a licensed wheel.
+#
+# numpy is version-sensitive:
+#   DockQ 2.1.3  needs numpy<2   -> pin 1.26.4 for scoring
+#   esm SDK      needs numpy 2.x -> pin 2.5.2 for ESM folding
+# Install the appropriate numpy for the step you are running.
+
+biopython>=1.83
+pandas>=2.0
+matplotlib>=3.8
+requests>=2.31
+DockQ==2.1.3
+py3Dmol>=2.4
+
+# numpy — choose per step (see note above):
+# numpy==1.26.4   # scoring / DockQ
+# numpy==2.5.2    # ESM folding
+
+# optional, for the cloud co-folder clients:
+# esm             # ESMFold2 via Biohub Forge

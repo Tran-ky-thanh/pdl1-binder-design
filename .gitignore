@@ -1,0 +1,56 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# --- virtual environments (multi-GB: torch, CUDA, PyRosetta) ---
+.venv/
+venv/
+env/
+
+# --- large model / pipeline outputs (regenerate, don't commit) ---
+rfdiff_out/
+rfdiff_out2/
+rfdiff_in/
+mpnn_in/
+mpnn_work/
+colabfold/
+fold_screen/out/
+fold_screen/chunks/
+fold_screen/bench/
+fold_screen/cluster/
+**/chunk*/
+**/out/
+**/traj/
+outputs/
+batch_test/
+mono_test/
+sample/
+
+# --- reference dataset (download from HuggingFace, do not redistribute) ---
+meta/
+predictions.parquet
+*.parquet
+
+# --- bulk structure / MSA files ---
+*.a3m
+*.trb
+# loose structure files (the report embeds only the top-30 it needs)
+*.pdb
+*.cif
+!report/**
+
+# --- logs, temp, os ---
+*.log
+/tmp/
+.DS_Store
+Thumbs.db
+
+# --- secrets (never commit API keys) ---
+*.key
+.env
+.bkey
+.nskey
+.bhkey
+secrets*
