@@ -177,7 +177,7 @@ hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
   <div class="brand">PD&#8209;L1 <b>&#8594;</b> binders</div>
   <div class="links">
     <a href="#why">Why</a><a href="#build">Generation</a><a href="#colabfold">ColabFold filter</a><a href="#pipeline">Pipeline</a>
-    <a href="#results">Results</a><a href="#top30">Top&nbsp;30</a><a href="#novelty">Novelty</a><a href="#tips">Lessons</a>
+    <a href="#results">Results</a><a href="#top30">Top&nbsp;30</a><a href="#novelty">Novelty</a>
   </div>
   <button class="themebtn" id="themebtn" title="Toggle theme">&#9789;</button>
 </div></nav>
@@ -319,13 +319,6 @@ hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
   The reference PD&#8209;L1 set contains <b id="nvA">90</b> designs, of which <b id="nvB">39</b> are experimentally confirmed binders spanning Kd <b id="nvC">0.6&ndash;2618&nbsp;nM</b>. Reassuringly, for <b>13 of our top&#8209;30</b> the nearest (still &lt;45% identical) reference neighbour is one of those confirmed binders &mdash; the novel designs cluster in a region of sequence space that is known to yield real binders.</div>
   <div class="tbl-wrap"><table id="novTable"></table></div>
   <p class="src">Note on external novelty: the dataset recipe also screens novelty against UniRef90 (MMseqs2, reject &gt;60% id / &gt;50% cov or TM&nbsp;&ge;&nbsp;0.5). Every free search server for that step was unreachable during this work (search.mmseqs.com down, NCBI rate&#8209;blocked, EBI endpoints gated), and the throttled bandwidth made a local UniRef90 build infeasible, so external novelty was substituted by this internal identity check against the dataset itself.</p>
-</div></section>
-
-<section id="tips"><div class="wrap">
-  <p class="kicker">07 &middot; Field notes</p>
-  <h2>Lessons &amp; small tips</h2>
-  <p class="sub">The things that actually cost time, and what fixed them &mdash; mostly about running a research stack on a constrained Windows/WSL box.</p>
-  <div class="tipgrid" id="tipGrid"></div>
 </div></section>
 
 </main>
@@ -617,24 +610,7 @@ function mkViewer(elm,pdb,opt){
   io.observe(host);
 })();
 
-/* ---------- tips ---------- */
-var tips=[
-  ['&#9889;','Stage by cost, not by taste','8&nbsp;GB cannot fold everything well. Run one cheap local co&#8209;fold on all 1,050, then spend accurate cloud compute only on the ~50 that survive. The expensive models never see a hopeless design.'],
-  ['&#127919;','Seed RFdiffusion from a real epitope','Backbones were grown against the PD&#8209;1&#8209;binding face of PD&#8209;L1 from three crystal complexes (5C3T / 4ZQK / 4Z18) plus de novo scaffolds, hotspots Y56 / R113 / M115 / Y123 fixed. Anchoring on a known epitope keeps the entire downstream funnel pointed at a bindable surface.'],
-  ['&#129516;','SolubleMPNN folds better than ProteinMPNN','On identical backbones, SolubleMPNN gave a higher monomer pLDDT (median 93.0 vs 90.3; 90% vs 84% clear the gate) &mdash; it biases toward soluble, stable sequences. Useful upstream, but not yet evidence of better <em>binding</em>: that is decided at the complex stage.'],
-  ['&#128137;','Monomer foldability barely discriminates','pLDDT and pTM are strongly correlated (r&nbsp;0.88&ndash;0.91), and MPNN sequences fold well as monomers almost by construction (median 91.7; 93.5% &ge;&nbsp;70). Keep the gate loose (pLDDT&nbsp;&ge;&nbsp;70) &mdash; over&#8209;filtering here discards good binders for no real signal.'],
-  ['&#128203;','Cheap filters first &mdash; but check they bite','Textbook order runs dedup / liability / novelty before any GPU fold. Confirm they actually remove something: 90% dedup removed <b>0</b> here (diverse backbones, MPNN temp 0.2), so re&#8209;ordering would have saved zero folds. The step that truly shrinks the pool &mdash; 70% diversity &mdash; belongs <em>after</em> folding, so the cluster representative is the best&#8209;folding one.'],
-  ['&#129513;','Relax the backbone before &Delta;&Delta;G','Side&#8209;chain&#8209;only relax on recycle&#8209;1 structures invents clash blow&#8209;ups (&Delta;&Delta;G in the thousands). Use a coordinate&#8209;constrained <code>FastRelax</code> with backbone free. Interface metrics barely move &mdash; energy terms become usable.'],
-  ['&#128207;','ipSAE is min&#8209;of&#8209;both&#8209;directions','ipSAE<sub>min</sub> is the minimum of the A&#8594;B and B&#8594;A <code>asym</code> rows for one structure &mdash; not a min across models. Being pure&#8209;PAE, it is invariant to relaxation, so it is safe to compute once on the raw fold.'],
-  ['&#128260;','The numpy tug&#8209;of&#8209;war','DockQ&nbsp;2.1.3 needs <code>numpy&lt;2</code>; the ESM SDK needs <code>numpy&nbsp;2.x</code>. Pin <code>1.26.4</code> before scoring, flip to <code>2.5.2</code> before ESM folding. PyPI is fast &mdash; the toggle costs seconds.'],
-  ['&#128268;','Three opinions beat two','Boltz&#8209;2 and ESMFold2&#8209;Full agreed on 46 poses; adding Protenix as a third vote rejected 3 more (high Boltz/ESM sc_DockQ but Protenix &lt;0.23). A cheap third co&#8209;folder is the highest&#8209;value filter in the whole pipeline.'],
-  ['&#128421;','WSL hates aggressive polling','Tight <code>wsl.exe</code> polling that times out (SIGTERM) destabilises the VM and restarts it &mdash; wiping <code>/tmp</code>. Poll sparingly (20&ndash;30&nbsp;min), keep workers resumable, and never store anything you need in <code>/tmp</code>.'],
-  ['&#128273;','Know your free co&#8209;folders','ESMFold2&#8209;Full via Biohub Forge is free and PAE&#8209;capable (ipSAE works). Protenix via JapanFold is free but exposes no PAE (iptm + sc_DockQ only). Boltz&#8209;2 test keys return a mock fixture &mdash; only live keys fold real sequences.'],
-  ['&#129302;','PowerShell eats your shell metachars','<code>&lt;</code>, <code>|</code>, <code>$()</code> in a WSL command string get parsed by PowerShell first. Write the logic to a <code>.sh</code>/<code>.py</code> file and run it via its <code>/mnt/c/</code> path &mdash; far more reliable than escaping.']
-];
-document.getElementById('tipGrid').innerHTML=tips.map(function(t){
-  return '<div class="tip"><h4><span class="ic">'+t[0]+'</span>'+t[1]+'</h4><p>'+t[2]+'</p></div>';
-}).join('');
+/* Field notes / lessons moved to PIPELINE.md (redistributed per stage). */
 
 })();
 </script>

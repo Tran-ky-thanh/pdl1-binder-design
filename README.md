@@ -62,9 +62,26 @@ See `report/index.html` for the full analysis and figures.
   full relax** (`scripts/bench_ddg.py`). See the lesson in `results/LESSONS.md`:
   side-chain-only relax on recycle-1 structures produces false "clash blow-ups".
 
+## Running it
+
+One entry point drives (or documents) every stage in order:
+
+```bash
+./run_pipeline.sh list      # list stages
+./run_pipeline.sh check      # environment / prereq check
+./run_pipeline.sh 07_rank    # run one stage (local stages run for real)
+./run_pipeline.sh all        # run local stages, document the GPU/cloud ones
+```
+
+See **[PIPELINE.md](PIPELINE.md)** for the full walk-through: the exact command and
+environment-switch for every stage, the ColabFold cache/batching tips, and the
+field-notes/lessons distributed per stage.
+
 ## Repository layout
 
 ```
+run_pipeline.sh     single entry point / orchestrator
+PIPELINE.md         per-stage commands, env switches, caching + batching tips, lessons
 scripts/            pipeline + scoring code
   ipsae.py            ipSAE (vendored from the Dunbrack lab — see header/attribution)
   score_iface.py      sc_DockQ + BSA vs designed backbone
@@ -72,9 +89,13 @@ scripts/            pipeline + scoring code
   rosetta_iface.py    InterfaceAnalyzer helpers
   eval_colabfold.py   localColabFold evaluation
   recompute_pdl1.py   metric recomputation vs the reference dataset
-  run_complex.sh      localColabFold complex-fold driver
+  run_complex.sh      localColabFold complex-fold driver (recycle 1, reused MSA, resumable)
   run_scoring.sh      scoring driver
-  analysis/           novelty, data extraction, and report generation
+  analysis/
+    rank_designs.py     stage 07 - reproduces final_ranking.csv from the 3 co-fold tables
+    align_top30.py      superpose the top-30 complexes onto a common PD-L1 frame
+    novelty_and_extract.py / slim_report_data.py / build_report.py   report generation
+    plot_zscore_dist.py z-score distribution figure
 results/            small result tables (CSV/TXT) for every stage of the funnel
 report/index.html   the interactive HTML report (self-contained; 3Dmol.js from CDN)
 ```
