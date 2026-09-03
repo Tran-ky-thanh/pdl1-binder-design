@@ -167,6 +167,12 @@ ul.clean li{margin:7px 0}
 
 .seqbox{font-family:"IBM Plex Mono";font-size:11.5px;line-height:1.7;word-break:break-all;color:var(--ink-soft);
   background:var(--surface-2);border-radius:8px;padding:9px 11px;margin-top:8px}
+.figrow{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0 6px}
+@media(max-width:720px){.figrow{grid-template-columns:1fr}}
+.fig{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:var(--shadow)}
+.fig img{width:100%;border-radius:8px;background:#fff;display:block}
+.fig figcaption{font-size:12.5px;color:var(--ink-soft);margin-top:9px;line-height:1.5}
+.fig figcaption b{color:var(--ink);font-weight:600}
 footer{padding:40px 0 70px;color:var(--ink-soft);font-size:13px}
 footer .wrap{display:flex;flex-direction:column;gap:6px}
 .src{font-size:12.5px;color:var(--ink-faint);font-style:italic;margin-top:10px}
@@ -226,6 +232,13 @@ hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
   <div class="callout warn"><div class="t">Lesson that changed the numbers: relax the backbone, not just side chains</div>
   Recycle&#8209;1 structures carry small backbone clashes. An early side&#8209;chain&#8209;only relax left those clashes in place and produced <b>false &ldquo;clash blow&#8209;ups&rdquo;</b> in &Delta;&Delta;G (up to +5,776&nbsp;REU). Switching to a <b>coordinate&#8209;constrained full relax</b> (<span class="mono">FastRelax</span> with backbone + &chi; free, restrained to start coords) removed every artefact. Interface metrics (ipSAE, sc_DockQ) were essentially unchanged by relaxation &mdash; confirming the triage ranking is robust &mdash; while &Delta;&Delta;G/CMS only become meaningful <em>after</em> the constrained relax.</div>
 
+  <h3>Evidence</h3>
+  <div class="figrow">
+    <figure class="fig"><img id="figComparison" alt="localColabFold vs dataset ipSAE and sc_DockQ, on the diagonal">
+      <figcaption><b>Same numbers as the dataset.</b> Recomputing ipSAE and sc_DockQ on the dataset&#8217;s <em>own</em> structures with our <span class="mono">ipsae.py</span> + DockQ reproduces the published values (points sit on the diagonal, r&nbsp;&asymp;&nbsp;1.0). The metric code path is correct &mdash; so the same code applied to localColabFold predictions is a legitimate filter.</figcaption></figure>
+    <figure class="fig"><img id="figRelax" alt="metrics before vs after the constrained full relax">
+      <figcaption><b>Relaxation is safe for the screen.</b> Before vs after the coordinate&#8209;constrained full relax: sc_DockQ barely moves (on the diagonal) and ipSAE is exactly invariant (&Delta;&nbsp;=&nbsp;0.0000, pure&#8209;PAE). Only BSA / energy terms shift &mdash; so the triage ranking is robust, and the earlier &ldquo;clash blow&#8209;ups&rdquo; were the side&#8209;chain&#8209;only relax artefact, not real.</figcaption></figure>
+  </div>
   <p class="src">Source labels used throughout: <b>localColabFold</b> = our AF2&#8209;multimer recycle&#8209;1 predictions and metrics; <b>dataset</b> = the reference Anthropic PD&#8209;L1 design set and its published per&#8209;model metrics. Comparisons are always local&#8209;vs&#8209;dataset, never framed as two competing authors.</p>
 </div></section>
 
@@ -317,6 +330,16 @@ hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
   <p>Each survivor&#8217;s sequence was aligned (global, BLOSUM62) against all <b>90</b> dataset PD&#8209;L1 designs. The maximum identity to any reference design, over the entire top&#8209;30, is <b>44.6%</b>; most sit near 33&ndash;40%. Nothing approaches the &ge;50% identity / &ge;50% coverage band that the dataset methodology treats as a redundancy hit. In short: the pipeline is <b>finding new solutions to the same epitope</b>, not memorising the reference binders.</p>
   <div class="callout"><div class="t">Context from the dataset</div>
   The reference PD&#8209;L1 set contains <b id="nvA">90</b> designs, of which <b id="nvB">39</b> are experimentally confirmed binders spanning Kd <b id="nvC">0.6&ndash;2618&nbsp;nM</b>. Reassuringly, for <b>13 of our top&#8209;30</b> the nearest (still &lt;45% identical) reference neighbour is one of those confirmed binders &mdash; the novel designs cluster in a region of sequence space that is known to yield real binders.</div>
+  <h3>Same epitope, new backbone — cand00725 vs its nearest reference</h3>
+  <p>The clearest way to see &ldquo;novel, not a rediscovery&rdquo; is to superpose a design on its nearest reference. Here is <span class="mono">cand00725</span> (rank&nbsp;4) overlaid on <span class="mono">mythos_preview_single_target_pdl1_rank03</span> &mdash; its closest dataset neighbour at just <b>36% identity</b>, and an experimentally <b>confirmed ~0.6&nbsp;nM binder</b>. Aligned on the shared PD&#8209;L1 target (109 C&alpha;, RMSD&nbsp;0.5&nbsp;&Aring;), the two binders land on the <b>same epitope</b> yet are clearly <b>different backbones and sequences</b> &mdash; a new solution to a known-good site.</p>
+  <div class="viewcard" style="max-width:640px;margin:6px auto 4px">
+    <div class="viewer" id="novViewer" style="aspect-ratio:16/10"><div class="badge">cand00725 &nbsp;vs&nbsp; ref rank03</div><div class="hint">drag</div></div>
+    <div class="cap"><div class="m">
+      <span><i class="dot" style="background:var(--target)"></i> PD&#8209;L1 target</span>
+      <span><i class="dot" style="background:var(--accent-deep)"></i> cand00725 (novel, 36% id)</span>
+      <span><i class="dot" style="background:#d98a2b"></i> reference rank03 (confirmed ~0.6&nbsp;nM)</span>
+    </div></div>
+  </div>
   <div class="tbl-wrap"><table id="novTable"></table></div>
   <p class="src">Note on external novelty: the dataset recipe also screens novelty against UniRef90 (MMseqs2, reject &gt;60% id / &gt;50% cov or TM&nbsp;&ge;&nbsp;0.5). Every free search server for that step was unreachable during this work (search.mmseqs.com down, NCBI rate&#8209;blocked, EBI endpoints gated), and the throttled bandwidth made a local UniRef90 build infeasible, so external novelty was substituted by this internal identity check against the dataset itself.</p>
 </div></section>
@@ -607,6 +630,33 @@ function mkViewer(elm,pdb,opt){
   });
   // init on view
   var io=new IntersectionObserver(function(e){ if(e[0].isIntersecting){ load(top[0],top[0]._pick); io.disconnect(); } },{rootMargin:'150px'});
+  io.observe(host);
+})();
+
+/* ---------- section-02 evidence figures ---------- */
+(function(){
+  var a=document.getElementById('figComparison'), b=document.getElementById('figRelax');
+  if(a && DATA.fig_comparison) a.src='data:image/png;base64,'+DATA.fig_comparison;
+  if(b && DATA.fig_relax)      b.src='data:image/png;base64,'+DATA.fig_relax;
+})();
+
+/* ---------- novelty overlay (cand00725 vs nearest reference) ---------- */
+(function(){
+  var host=document.getElementById('novViewer');
+  if(!host || !DATA.novelty_overlay) return;
+  var TC=cv('--target')||'#a99a80', BC=cv('--accent-deep')||'#0a6d64', RC='#d98a2b';
+  function render(){
+    try{
+      var v=$3Dmol.createViewer(host,{backgroundColor:cv('--viewer-bg')||'#0d1512',antialias:true});
+      v.addModel(DATA.novelty_overlay,'pdb');
+      v.setStyle({chain:'A'},{cartoon:{color:TC,opacity:1,thickness:0.5}});
+      v.setStyle({chain:'B'},{cartoon:{color:BC,thickness:0.75,arrows:true}});
+      v.setStyle({chain:'C'},{cartoon:{color:RC,thickness:0.75,arrows:true}});
+      try{ v.addSurface($3Dmol.SurfaceType.VDW,{opacity:0.5,color:'#ece9e2'},{chain:'A'}); }catch(e){}
+      v.zoomTo({chain:'A'}); v.render();
+    }catch(e){}
+  }
+  var io=new IntersectionObserver(function(e){ if(e[0].isIntersecting){ render(); io.disconnect(); } },{rootMargin:'120px'});
   io.observe(host);
 })();
 
