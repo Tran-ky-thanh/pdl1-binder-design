@@ -236,8 +236,8 @@ hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
   <div class="figrow">
     <figure class="fig"><img id="figComparison" alt="localColabFold vs dataset ipSAE and sc_DockQ, on the diagonal">
       <figcaption><b>Same numbers as the dataset.</b> Recomputing ipSAE and sc_DockQ on the dataset&#8217;s <em>own</em> structures with our <span class="mono">ipsae.py</span> + DockQ reproduces the published values (points sit on the diagonal, r&nbsp;&asymp;&nbsp;1.0). The metric code path is correct &mdash; so the same code applied to localColabFold predictions is a legitimate filter.</figcaption></figure>
-    <figure class="fig"><img id="figRelax" alt="metrics before vs after the constrained full relax">
-      <figcaption><b>Relaxation is safe for the screen.</b> Before vs after the coordinate&#8209;constrained full relax: sc_DockQ barely moves (on the diagonal) and ipSAE is exactly invariant (&Delta;&nbsp;=&nbsp;0.0000, pure&#8209;PAE). Only BSA / energy terms shift &mdash; so the triage ranking is robust, and the earlier &ldquo;clash blow&#8209;ups&rdquo; were the side&#8209;chain&#8209;only relax artefact, not real.</figcaption></figure>
+    <figure class="fig"><img id="figConsensus" alt="dataset consensus vs independent localColabFold, ipSAE_min and ipTM">
+      <figcaption><b>localColabFold tracks the 10&#8209;model consensus.</b> Folding 7 dataset PD&#8209;L1 designs independently with localColabFold and comparing to the dataset consensus ipSAE_min gives tight agreement (ipSAE_min r&nbsp;=&nbsp;0.968, ipTM r&nbsp;=&nbsp;0.981). Crucially the wetlab <span style="color:#c1272d;font-weight:600">non&#8209;binders</span> the consensus scores low (O.mt_rank23/27/28) are scored low by localColabFold too &mdash; so one cheap recycle&#8209;1 pass already separates <span style="color:#1a9850;font-weight:600">binders</span> from non&#8209;binders.</figcaption></figure>
   </div>
   <p class="src">Source labels used throughout: <b>localColabFold</b> = our AF2&#8209;multimer recycle&#8209;1 predictions and metrics; <b>dataset</b> = the reference Anthropic PD&#8209;L1 design set and its published per&#8209;model metrics. Comparisons are always local&#8209;vs&#8209;dataset, never framed as two competing authors.</p>
 </div></section>
@@ -297,7 +297,7 @@ hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
 <section id="top30"><div class="wrap">
   <p class="kicker">05 &middot; The shortlist</p>
   <h2>Top&#8209;30 designs &amp; predicted complexes</h2>
-  <p class="sub">Ranked by composite z&#8209;score. Structures are the localColabFold co&#8209;fold complexes &mdash; <span style="color:var(--target);font-weight:600">PD&#8209;L1 target in sand</span>, <span style="color:var(--accent-deep);font-weight:600">designed binder in teal</span>, binder interface side chains highlighted. All complexes are superposed on the PD&#8209;L1 target, so the initial orientation is the same everywhere and the binder poses are directly comparable. Drag to rotate.</p>
+  <p class="sub">Ranked by composite z&#8209;score. Structures are the localColabFold co&#8209;fold complexes &mdash; <span style="color:var(--target);font-weight:600">PD&#8209;L1 target in sand</span>, <span style="color:var(--accent-deep);font-weight:600">designed binder in teal</span>, binder interface side chains highlighted, and the <span style="color:#c79a1e;font-weight:600">PD&#8209;1 epitope hotspots</span> (Y56 / R113 / M115 / Y123) shown as yellow sticks on the target. All complexes are superposed on the PD&#8209;L1 target, so the initial orientation is the same everywhere and the binder poses are directly comparable. Drag to rotate.</p>
 
   <h3>Featured &mdash; the top 6</h3>
   <div class="featgrid" id="featGrid"></div>
@@ -338,6 +338,7 @@ hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
       <span><i class="dot" style="background:var(--target)"></i> PD&#8209;L1 target</span>
       <span><i class="dot" style="background:var(--accent-deep)"></i> cand00725 (novel, 36% id)</span>
       <span><i class="dot" style="background:#d98a2b"></i> reference rank03 (confirmed ~0.6&nbsp;nM)</span>
+      <span><i class="dot" style="background:#e6c74d"></i> epitope hotspots (sticks)</span>
     </div></div>
   </div>
   <div class="tbl-wrap"><table id="novTable"></table></div>
@@ -538,6 +539,7 @@ document.getElementById('novStats').innerHTML=[
 /* ---------- 3Dmol ---------- */
 var TCOL=cv('--target')||'#a99a80', BCOL=cv('--accent-deep')||'#0a6d64', IFCOL='#e0a24a';
 var SURFCOL='#ece9e2'; /* PD-L1 surface — near-white warm grey */
+var HOTSPOTS=[39,96,98,106]; /* PD-1 epitope hotspots on target chain A: Y56/R113/M115/Y123 */
 function chainSplit(model){
   var atoms=model.selectedAtoms({});
   var per={};
@@ -551,6 +553,7 @@ function styleComplex(v,cs,opt){
   v.setStyle({},{});
   v.setStyle({chain:cs.target},{cartoon:{color:TCOL,opacity:1,thickness:0.5}});
   v.setStyle({chain:cs.binder},{cartoon:{color:BCOL,thickness:0.7,arrows:true}});
+  try{ v.addStyle({chain:cs.target, resi:HOTSPOTS},{stick:{radius:0.22,colorscheme:'yellowCarbon'}}); }catch(e){}
   if(opt.iface!==false){
     v.setStyle({chain:cs.binder, byres:true, within:{distance:5,sel:{chain:cs.target}}},
       {cartoon:{color:BCOL,thickness:0.7,arrows:true},stick:{radius:0.16,colorscheme:'default'}});
@@ -635,9 +638,9 @@ function mkViewer(elm,pdb,opt){
 
 /* ---------- section-02 evidence figures ---------- */
 (function(){
-  var a=document.getElementById('figComparison'), b=document.getElementById('figRelax');
+  var a=document.getElementById('figComparison'), b=document.getElementById('figConsensus');
   if(a && DATA.fig_comparison) a.src='data:image/png;base64,'+DATA.fig_comparison;
-  if(b && DATA.fig_relax)      b.src='data:image/png;base64,'+DATA.fig_relax;
+  if(b && DATA.fig_consensus)  b.src='data:image/png;base64,'+DATA.fig_consensus;
 })();
 
 /* ---------- novelty overlay (cand00725 vs nearest reference) ---------- */
@@ -652,6 +655,7 @@ function mkViewer(elm,pdb,opt){
       v.setStyle({chain:'A'},{cartoon:{color:TC,opacity:1,thickness:0.5}});
       v.setStyle({chain:'B'},{cartoon:{color:BC,thickness:0.75,arrows:true}});
       v.setStyle({chain:'C'},{cartoon:{color:RC,thickness:0.75,arrows:true}});
+      try{ v.addStyle({chain:'A', resi:HOTSPOTS},{stick:{radius:0.22,colorscheme:'yellowCarbon'}}); }catch(e){}
       try{ v.addSurface($3Dmol.SurfaceType.VDW,{opacity:0.5,color:'#ece9e2'},{chain:'A'}); }catch(e){}
       v.zoomTo({chain:'A'}); v.render();
     }catch(e){}
