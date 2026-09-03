@@ -93,17 +93,35 @@ run one cheap local co-fold on all 1,050, then spend accurate cloud compute only
 ~50 that survive. The expensive models never see a hopeless design.
 
 ### 00 · RFdiffusion → 52 backbones  *(ROOT env, GPU)*
+Inputs are committed: the trimmed PD-L1 target structures in **`inputs/rfdiffusion/`**
+(`pdl1_target.pdb`, `pdl1_5C3T.pdb`, `pdl1_4ZQK.pdb`, `pdl1_4Z18.pdb`). Run all four arms:
 ```bash
+sudo -i && source /root/miniforge3/etc/profile.d/conda.sh && conda activate <rfdiffusion env>
+bash scripts/00_rfdiffusion.sh          # loops the 4 arms below; set NUM=/OUT= to taste
+```
+Exact settings, recovered from the run `.trb` configs (checkpoint `Complex_base_ckpt.pt`, zero noise):
+
+| arm | input_pdb | contig | binder len | hotspot_res |
+|---|---|---|---|---|
+| pdl1_binder (de novo) | `pdl1_target.pdb` | `A2-110/0 70-80` | 70–80 | `A39,A96,A98,A106` |
+| 5C3T_binder | `pdl1_5C3T.pdb` | `A18-132/0 65-85` | 65–85 | `A56,A113,A115,A123` |
+| 4ZQK_binder | `pdl1_4ZQK.pdb` | `A18-132/0 65-85` | 65–85 | `A56,A113,A115,A123` |
+| 4Z18_binder | `pdl1_4Z18.pdb` | `A18-132/0 65-85` | 65–85 | `A56,A113,A115,A123` |
+
+One invocation used `num_designs` 4–8; the script was looped to build ~50 backbones per template,
+then diversity-reduced to 52. The de-novo target is numbered 2–110 and the crystal templates 18–132,
+so the two hotspot sets mark the **same epitope** offset by 17.
+```bash
+# the arm each row expands to:
 python /root/protein/RFdiffusion/scripts/run_inference.py \
-  inference.input_pdb=<PD-L1_target.pdb> inference.output_prefix=$PROJECT/rfdiff_out2/4ZQK_binder \
-  'contigmap.contigs=[A1-115/0 60-90]' 'ppi.hotspot_res=[A56,A113,A115,A123]' \
-  inference.num_designs=... denoiser.noise_scale_ca=0 denoiser.noise_scale_frame=0
-# checkpoint: Complex_base_ckpt.pt
+  inference.input_pdb=inputs/rfdiffusion/pdl1_5C3T.pdb inference.output_prefix=$OUT/5C3T_binder \
+  inference.num_designs=8 'contigmap.contigs=[A18-132/0 65-85]' 'ppi.hotspot_res=[A56,A113,A115,A123]' \
+  denoiser.noise_scale_ca=0 denoiser.noise_scale_frame=0
 ```
 > **Tip — seed from a real epitope.** Backbones grown against the PD-1-binding face from
 > crystal complexes **5C3T / 4ZQK / 4Z18** plus de novo scaffolds, hotspots
-> **Y56 / R113 / M115 / Y123** fixed. Anchoring on a known epitope keeps the whole
-> downstream funnel pointed at a bindable surface.
+> **Y56 / R113 / M115 / Y123** (crystal numbering) fixed. Anchoring on a known epitope keeps
+> the whole downstream funnel pointed at a bindable surface.
 
 ### 01 · ProteinMPNN + SolubleMPNN → 4,905 sequences  *(MPNN env, CPU ok)*
 Run **both** designers at sampling temperature 0.2:

@@ -94,12 +94,11 @@ stage_00_rfdiff(){
   tip "Seed from real epitope: crystal complexes 5C3T/4ZQK/4Z18 + de novo scaffolds,"
   tip "hotspots Y56/R113/M115/Y123 fixed. Anchoring on a known epitope keeps the whole funnel on a bindable face."
   print_root_env
-  c_run "python $RFDIFF/scripts/run_inference.py \\"
-  note  "  inference.output_prefix=$PROJECT/rfdiff_out2/4ZQK_binder \\"
-  note  "  inference.input_pdb=<PD-L1_target.pdb> inference.num_designs=... \\"
-  note  "  'contigmap.contigs=[A1-115/0 60-90]' 'ppi.hotspot_res=[A56,A113,A115,A123]' \\"
-  note  "  denoiser.noise_scale_ca=0 denoiser.noise_scale_frame=0   # checkpoint: Complex_base_ckpt.pt"
+  note "inputs committed at inputs/rfdiffusion/ (pdl1_target/5C3T/4ZQK/4Z18). 4 arms, exact contigs+hotspots:"
+  c_run "bash $SCRIPTS/00_rfdiffusion.sh          # de novo A2-110/0 70-80 + crystal A18-132/0 65-85"
+  note "hotspots: crystal A56,A113,A115,A123  |  de-novo A39,A96,A98,A106  (same epitope, +17 offset); noise=0"
   [ -d "$RFDIFF" ] && ok "RFdiffusion present: $RFDIFF" || skip "RFdiffusion not found (needs root + GPU) - documented only"
+  [ -d "$REPO/inputs/rfdiffusion" ] && ok "target inputs present: inputs/rfdiffusion/" || note "inputs/rfdiffusion missing"
 }
 
 stage_01_mpnn(){

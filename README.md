@@ -82,7 +82,10 @@ field-notes/lessons distributed per stage.
 ```
 run_pipeline.sh     single entry point / orchestrator
 PIPELINE.md         per-stage commands, env switches, caching + batching tips, lessons
+inputs/rfdiffusion/ trimmed PD-L1 target structures fed to RFdiffusion (stage 00)
 scripts/            pipeline + scoring code
+  00_rfdiffusion.sh   stage 00 - the 4 RFdiffusion arms (exact contigs + hotspots)
+  cofold/             stage 06 clients: boltz2_run.py, esmfold2_full.py, protenix_run.py
   ipsae.py            ipSAE (vendored from the Dunbrack lab — see header/attribution)
   score_iface.py      sc_DockQ + BSA vs designed backbone
   bench_ddg.py        PyRosetta ΔΔG / CMS with constrained full relax
