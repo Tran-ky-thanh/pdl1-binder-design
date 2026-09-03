@@ -155,19 +155,27 @@ python scripts/bench_ddg.py   ...                              # PyRosetta ddG/C
 ### 06 · Cloud multi-predictor consensus → 43 pose-PASS  *(USER venv + keys)*
 Fold each shortlisted design with three independent cloud co-folders; keep only designs where
 **all three** reproduce the pose at `sc_DockQ ≥ 0.23`.
+**Protenix v2 (JapanFold) — runnable and tested** (`scripts/cofold/protenix_run.py`):
 ```bash
-python scripts/cofold/boltz2_run.py    --key $BOLTZ_API_KEY  --in cands.fasta --out scoring/boltz_ipsae_scdockq.csv
-python scripts/cofold/esmfold2_full.py --token $BIOHUB_TOKEN --in cands.fasta --out scoring/esm_full_ipsae_scdockq.csv   # needs numpy 2.5.2
-python scripts/cofold/protenix_run.py                        --in cands.fasta --out scoring/protenix_results.csv
+python scripts/cofold/protenix_run.py --in results/final_selection.csv \
+    --out $SCORING/protenix_results.csv --scoring $SCORING --scripts scripts \
+    --batch 6 --space 3.5 --cooldown 150
 ```
-> These three API clients lived in `/tmp` and were lost to a WSL VM restart. Re-create them
-> from these notes: **Boltz-2** — `POST api.boltz.bio/compute/v1/predictions/structure-and-binding`,
-> header `x-api-key`, model `boltz-2.1`; output tar has `sample_0_predicted_structure.cif` +
-> `sample_0_pae.npz` → ipSAE computable. **ESMFold2-Full** — Biohub Forge `esm` SDK,
-> `SequenceStructureForgeInferenceClient(model="esmfold2-2026-05", url="https://biohub.ai")`,
-> `client.fold("TARGET|BINDER", FoldingConfig(include_pae=True))`; free, PAE-capable.
-> **Protenix v2** — JapanFold `api.japanfold.aiand.com/v1/predictions`, browser
-> User-Agent/Referer headers, no PAE (→ iptm + sc_DockQ only).
+Free public API, no key. It **respects the rate limit** the way we did by hand: submit a
+small batch (`--batch`, 5–8), space submits `--space` seconds apart, wait for the batch to
+finish, then cool down `--cooldown` (~2–3 min) before the next batch. Resumable (skips
+candidates already in `--out`). Protenix has no PAE, so it records iptm/ptm/plddt/confidence
+from `results.json` and computes `sc_DockQ` from the predicted CIF via `score_iface.py`.
+Verified: reproduces the stored `protenix_results.csv` rows exactly (e.g. cand00073
+iptm 0.962667 / sc_DockQ 0.92).
+
+**Boltz-2 and ESMFold2-Full clients** still need rebuilding (their `/tmp` copies were lost to
+a VM restart; the key files are present). Outlines: **Boltz-2** —
+`POST api.boltz.bio/compute/v1/predictions/structure-and-binding`, header `x-api-key`,
+model `boltz-2.1`; output tar has `sample_0_predicted_structure.cif` + `sample_0_pae.npz`
+→ ipSAE computable. **ESMFold2-Full** — Biohub Forge `esm` SDK,
+`SequenceStructureForgeInferenceClient(model="esmfold2-2026-05", url="https://biohub.ai")`,
+`client.fold("TARGET|BINDER", FoldingConfig(include_pae=True))`; free, PAE-capable, needs numpy 2.5.2.
 >
 > **Tip — three opinions beat two.** Boltz-2 + ESMFold2-Full agreed on 46 poses; adding
 > Protenix rejected 3 more (high Boltz/ESM sc_DockQ but Protenix < 0.23). A cheap third

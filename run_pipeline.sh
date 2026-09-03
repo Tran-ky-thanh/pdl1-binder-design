@@ -169,11 +169,12 @@ stage_06_cofold(){
   tip "Boltz-2 test keys return a MOCK fixture - only live keys fold real sequences."
   c_env "For ESMFold2 SDK you need numpy 2.x:"; ensure_numpy_hint
   note "BOLTZ_API_KEY $( [ -n "$BOLTZ_API_KEY" ] && echo SET || echo 'MISSING (export it)') | BIOHUB_TOKEN $( [ -n "$BIOHUB_TOKEN" ] && echo SET || echo 'MISSING (export it)')"
-  c_run "$PY $SCRIPTS/cofold/boltz2_run.py    --key \$BOLTZ_API_KEY  --in cands.fasta --out scoring/boltz_ipsae_scdockq.csv"
-  c_run "$PY $SCRIPTS/cofold/esmfold2_full.py --token \$BIOHUB_TOKEN --in cands.fasta --out scoring/esm_full_ipsae_scdockq.csv"
-  c_run "$PY $SCRIPTS/cofold/protenix_run.py                        --in cands.fasta --out scoring/protenix_results.csv"
-  note "(these API clients lived in /tmp and were lost to a VM restart - re-create from the outlines in PIPELINE.md)"
-  skip "cloud stage - needs API keys; documented in PIPELINE.md"
+  note "Protenix (JapanFold) is RUNNABLE - no key, batched to respect the rate limit:"
+  c_run "$PY $SCRIPTS/cofold/protenix_run.py --in $REPO/results/final_selection.csv --out $SCORING/protenix_results.csv --scoring $SCORING --scripts $SCRIPTS --batch 6 --space 3.5 --cooldown 150"
+  note "Boltz-2 + ESMFold2-Full clients still to rebuild (keys present in env); outlines in PIPELINE.md:"
+  c_run "$PY $SCRIPTS/cofold/boltz2_run.py    --key \$BOLTZ_API_KEY  --in cands.csv --out $SCORING/boltz_ipsae_scdockq.csv"
+  c_run "$PY $SCRIPTS/cofold/esmfold2_full.py --token \$BIOHUB_TOKEN --in cands.csv --out $SCORING/esm_full_ipsae_scdockq.csv   # numpy 2.5.2"
+  if [ "$RUN_HEAVY" = 1 ]; then run "$PY $SCRIPTS/cofold/protenix_run.py --in $REPO/results/final_selection.csv --out $SCORING/protenix_results.csv --scoring $SCORING --scripts $SCRIPTS --batch 6 --space 3.5 --cooldown 150"; else skip "set RUN_HEAVY=1 to actually submit the Protenix batch"; fi
 }
 ensure_numpy_hint(){ note "$PIP install -q numpy==2.5.2   # for the ESM SDK; switch back to 1.26.4 for DockQ scoring"; }
 
