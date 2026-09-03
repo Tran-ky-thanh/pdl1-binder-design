@@ -155,27 +155,41 @@ python scripts/bench_ddg.py   ...                              # PyRosetta ddG/C
 ### 06 · Cloud multi-predictor consensus → 43 pose-PASS  *(USER venv + keys)*
 Fold each shortlisted design with three independent cloud co-folders; keep only designs where
 **all three** reproduce the pose at `sc_DockQ ≥ 0.23`.
-**Protenix v2 (JapanFold) — runnable and tested** (`scripts/cofold/protenix_run.py`):
+**All three clients are implemented and tested** under `scripts/cofold/`. Each writes
+`cand,ipsae_min,sc_dockq` (ipSAE from PAE via `ipsae.py`, sc_DockQ from the predicted
+structure via `score_iface.py`) and is resumable.
+
+**Boltz-2** (`boltz2_run.py`) — needs a **live** key; runs under numpy 1.26.4:
+```bash
+python scripts/cofold/boltz2_run.py --in results/final_selection.csv \
+    --out $SCORING/boltz_ipsae_scdockq.csv --scoring $SCORING --scripts scripts --key $BOLTZ_API_KEY
+```
+`POST api.boltz.bio/.../structure-and-binding`, header `x-api-key`, model `boltz-2.1`; the
+archive has `sample_0_predicted_structure.cif` + `sample_0_pae.npz`. Boltz diffusion sampling
+is **stochastic** (`num_samples=1`, random seed) — values move a little run-to-run (tested
+cand00073: ipSAE 0.90 / sc_DockQ 0.91 vs stored 0.92 / 0.89).
+
+**ESMFold2-Full** (`esmfold2_full.py`) — **two passes**, because the esm SDK needs numpy 2.x
+and DockQ needs numpy <2 (they can't coexist):
+```bash
+pip install -q numpy==2.5.2          # FOLD pass (esm SDK)
+python scripts/cofold/esmfold2_full.py fold  --in results/final_selection.csv \
+    --outdir /tmp/esm_full_struct --results $SCORING/esmfold2_full_results.csv --token $BIOHUB_TOKEN
+pip install -q numpy==1.26.4         # SCORE pass (DockQ)
+python scripts/cofold/esmfold2_full.py score --outdir /tmp/esm_full_struct \
+    --out $SCORING/esm_full_ipsae_scdockq.csv --scoring $SCORING --scripts scripts
+```
+Biohub Forge, free + PAE-capable. Tested cand00725: reproduces stored ipSAE 0.8309 / sc_DockQ 0.912 exactly.
+
+**Protenix v2 / JapanFold** (`protenix_run.py`) — free, no key, **rate-limited** so it batches:
 ```bash
 python scripts/cofold/protenix_run.py --in results/final_selection.csv \
     --out $SCORING/protenix_results.csv --scoring $SCORING --scripts scripts \
     --batch 6 --space 3.5 --cooldown 150
 ```
-Free public API, no key. It **respects the rate limit** the way we did by hand: submit a
-small batch (`--batch`, 5–8), space submits `--space` seconds apart, wait for the batch to
-finish, then cool down `--cooldown` (~2–3 min) before the next batch. Resumable (skips
-candidates already in `--out`). Protenix has no PAE, so it records iptm/ptm/plddt/confidence
-from `results.json` and computes `sc_DockQ` from the predicted CIF via `score_iface.py`.
-Verified: reproduces the stored `protenix_results.csv` rows exactly (e.g. cand00073
-iptm 0.962667 / sc_DockQ 0.92).
-
-**Boltz-2 and ESMFold2-Full clients** still need rebuilding (their `/tmp` copies were lost to
-a VM restart; the key files are present). Outlines: **Boltz-2** —
-`POST api.boltz.bio/compute/v1/predictions/structure-and-binding`, header `x-api-key`,
-model `boltz-2.1`; output tar has `sample_0_predicted_structure.cif` + `sample_0_pae.npz`
-→ ipSAE computable. **ESMFold2-Full** — Biohub Forge `esm` SDK,
-`SequenceStructureForgeInferenceClient(model="esmfold2-2026-05", url="https://biohub.ai")`,
-`client.fold("TARGET|BINDER", FoldingConfig(include_pae=True))`; free, PAE-capable, needs numpy 2.5.2.
+Submits a small batch (`--batch`, 5–8), spaces submits `--space` s apart, waits for the batch,
+then cools down `--cooldown` (~2–3 min) before the next. No PAE (iptm + sc_DockQ only). Tested
+cand00073/cand00725: reproduces stored rows exactly.
 >
 > **Tip — three opinions beat two.** Boltz-2 + ESMFold2-Full agreed on 46 poses; adding
 > Protenix rejected 3 more (high Boltz/ESM sc_DockQ but Protenix < 0.23). A cheap third
