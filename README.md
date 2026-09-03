@@ -33,7 +33,8 @@ Foldable               2,162             (median pLDDT 91.7)
    │  dedup 90% (removed 0) + diversity down-sample 70%
    ▼
 Complex co-fold        1,050             (localColabFold AF2-multimer, recycle 1)
-   │  Stage-1 ipSAE gate → 242 · Stage-2 + sc_DockQ → 157
+   │  Stage-1 (ipSAE + sc_DockQ) → 242 · Stage-2 ΔΔG/CMS physics, PyRosetta → 157
+   │  (PyRosetta removes 85 weak/repulsive interfaces: ΔΔG ≤ −40 REU & CMS ≥ 360 Å²)
    │  liability + redundancy clustering
    ▼
 Curated               50

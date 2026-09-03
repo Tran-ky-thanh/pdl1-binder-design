@@ -220,7 +220,7 @@ hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
 <section id="colabfold"><div class="wrap">
   <p class="kicker">02 &middot; Is a cheap ColabFold pass a valid filter?</p>
   <h2>Making localColabFold a legitimate first screen</h2>
-  <p class="sub">Before trusting a recycle&#8209;1 local fold to throw candidates away, two things had to be established: that the interface metrics are computed <em>identically</em> to the reference method, and that the low&#8209;recycle backbone artefacts do not corrupt them.</p>
+  <p class="sub">Before trusting a recycle&#8209;1 local fold to throw candidates away, two things had to be established: that the interface metrics are computed <em>identically</em> to the reference method, and that a single cheap recycle&#8209;1 prediction still tracks the expensive multi&#8209;model consensus.</p>
 
   <h3>Same metrics, same code path</h3>
   <p>Both screening metrics are computed exactly as in the dataset methodology, from the localColabFold complex prediction (chain&nbsp;A = PD&#8209;L1 target, chain&nbsp;B = designed binder):</p>
@@ -228,9 +228,6 @@ hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
     <li><b>ipSAE<sub>min</sub></b> &mdash; the interface&#8209;pyramid score of Dunbrack&#8217;s <span class="mono">ipsae.py</span> (<span class="mono">pae_cutoff&nbsp;10, dist&nbsp;10</span>), read from the two <span class="mono">asym</span> rows (A&#8594;B and B&#8594;A) and taking the <b>minimum of the two directions</b> per structure &mdash; the same definition the reference uses per predictor. It is a pure&#8209;PAE quantity, so it is <b>invariant to relaxation</b> (verified &Delta;&nbsp;=&nbsp;0.0000).</li>
     <li><b>sc_DockQ</b> &mdash; DockQ (v2.1.3) of the predicted pose against the <em>designed</em> backbone, i.e. how faithfully the co&#8209;folder reproduces the intended docking geometry.</li>
   </ul>
-
-  <div class="callout warn"><div class="t">Lesson that changed the numbers: relax the backbone, not just side chains</div>
-  Recycle&#8209;1 structures carry small backbone clashes. An early side&#8209;chain&#8209;only relax left those clashes in place and produced <b>false &ldquo;clash blow&#8209;ups&rdquo;</b> in &Delta;&Delta;G (up to +5,776&nbsp;REU). Switching to a <b>coordinate&#8209;constrained full relax</b> (<span class="mono">FastRelax</span> with backbone + &chi; free, restrained to start coords) removed every artefact. Interface metrics (ipSAE, sc_DockQ) were essentially unchanged by relaxation &mdash; confirming the triage ranking is robust &mdash; while &Delta;&Delta;G/CMS only become meaningful <em>after</em> the constrained relax.</div>
 
   <h3>Evidence</h3>
   <div class="figrow">
@@ -272,7 +269,7 @@ hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
   <div class="chart" id="funnelChart"></div>
   <div class="grid3" style="margin-top:16px">
     <div class="card"><h3 style="margin:0 0 6px;font-size:15px">Generate (local, free)</h3><p style="font-size:13px;color:var(--ink-soft);margin:0">RFdiffusion (52 backbones) &rarr; ProteinMPNN + SolubleMPNN (4,905 seqs) &rarr; monomer gate + 70% diversity &rarr; 1,050.</p></div>
-    <div class="card"><h3 style="margin:0 0 6px;font-size:15px">Triage &amp; curate (local, free)</h3><p style="font-size:13px;color:var(--ink-soft);margin:0">1,050 localColabFold co&#8209;folds &rarr; two&#8209;stage ipSAE / sc_DockQ (157) &rarr; liability + clustering &rarr; 50.</p></div>
+    <div class="card"><h3 style="margin:0 0 6px;font-size:15px">Triage &amp; curate (local, free)</h3><p style="font-size:13px;color:var(--ink-soft);margin:0">1,050 localColabFold co&#8209;folds &rarr; ipSAE + sc_DockQ (242) &rarr; &Delta;&Delta;G / CMS physics gate (157) &rarr; liability + clustering &rarr; 50.</p></div>
     <div class="card"><h3 style="margin:0 0 6px;font-size:15px">Consensus (cloud, escalated)</h3><p style="font-size:13px;color:var(--ink-soft);margin:0">Boltz&#8209;2 + ESMFold2&#8209;Full + Protenix must all agree on the pose &rarr; 43 &rarr; z&#8209;rank &rarr; top&#8209;30.</p></div>
   </div>
 </div></section>
@@ -389,22 +386,23 @@ function txt(x,y,s,st){var t=el('text',{x:x,y:y,style:st||''});t.textContent=s;r
 /* ---------- funnel ---------- */
 (function(){
   var stages=[['MPNN sequences (2 methods)',4905],['Candidate pool',2481],
-    ['Monomer foldability gate',2162],['Diversity down&#8209;sample 70%',f.cofold],
-    ['Stage&#8209;1 ipSAE gate',f.stage1],['Stage&#8209;2 + sc_DockQ',f.stage2],
-    ['Curated (liability+cluster)',f.selected],['3&#8209;model co&#8209;fold',f.threemodel],
-    ['Pose&#8209;PASS (all 3)',f.posepass],['Reported top',30]];
-  var W=920,rh=34,gap=8,padL=230,padR=72,H=stages.length*(rh+gap)+8;
+    ['Monomer foldability gate',2162],['Diversity down-sample 70%',f.cofold],
+    ['Stage 1: ipSAE + sc_DockQ',f.stage1],['Stage 2: ΔΔG/CMS (PyRosetta)',f.stage2],
+    ['Curated (liability + cluster)',f.selected],['3-model co-fold',f.threemodel],
+    ['Pose-PASS (all 3)',f.posepass],['Reported top',30]];
+  var W=940,rh=34,gap=8,padL=250,padR=74,H=stages.length*(rh+gap)+8;
   var max=4905, bw=W-padL-padR;
   var svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',style:'display:block'});
   stages.forEach(function(s,i){
     var y=i*(rh+gap)+4, w=Math.max(bw*(s[1]/max),bw*0.03)+0;
-    // full track
     svg.appendChild(el('rect',{x:padL,y:y,width:bw,height:rh,rx:7,style:'fill:var(--surface-2)'}));
     svg.appendChild(el('rect',{x:padL,y:y,width:w,height:rh,rx:7,style:'fill:var(--accent);opacity:'+(1-i*0.09)}));
-    svg.appendChild(txt(padL-12,y+rh/2+5,s[0],'fill:var(--ink);font-size:14px;font-family:IBM Plex Sans;font-weight:500;text-anchor:end'));
-    svg.appendChild(txt(padL+w+10,y+rh/2+5,s[1].toLocaleString(),'fill:var(--ink);font-size:15px;font-family:IBM Plex Mono;font-weight:500'));
+    svg.appendChild(txt(padL-12,y+rh/2+5,s[0],'fill:var(--ink);font-size:13px;font-family:IBM Plex Sans;font-weight:500;text-anchor:end'));
+    var inside=w>bw*0.72;   // for the widest bars, put the count inside so it can't collide with the % column
+    svg.appendChild(txt(inside?padL+w-9:padL+w+10, y+rh/2+5, s[1].toLocaleString(),
+      'fill:'+(inside?'#f2fbf8':'var(--ink)')+';font-size:14px;font-family:IBM Plex Mono;font-weight:500;text-anchor:'+(inside?'end':'start')));
     var pct=(100*s[1]/max);
-    svg.appendChild(txt(padL+bw+4,y+rh/2+5,pct>=1?pct.toFixed(pct<10?1:0)+'%':pct.toFixed(1)+'%','fill:var(--ink-faint);font-size:11px;font-family:IBM Plex Mono;text-anchor:start'));
+    svg.appendChild(txt(padL+bw+6,y+rh/2+5,pct>=1?pct.toFixed(pct<10?1:0)+'%':pct.toFixed(1)+'%','fill:var(--ink-faint);font-size:11px;font-family:IBM Plex Mono;text-anchor:start'));
   });
   var c=document.getElementById('funnelChart');
   c.innerHTML='<div class="ct">Full screening funnel &mdash; 52 RFdiffusion backbones &rarr; top&#8209;30</div><div class="cc">Bar length &prop; count; right column = fraction of the 4,905 MPNN sequences retained. The 1,050 that enter the co&#8209;fold screen are the diversity down&#8209;sample.</div>';
@@ -456,7 +454,7 @@ document.getElementById('genStats').innerHTML=[
     svg.appendChild(el('circle',{cx:X(d.bz_scdq),cy:Y(d.ef_scdq),r:pxfail?5.5:4.5,
       style:'fill:'+col+';opacity:'+(pass?0.85:0.95)+';stroke:var(--surface);stroke-width:1'}));
   });
-  svg.appendChild(txt(W/2,H-8,'sc_DockQ &mdash; Boltz&#8209;2','fill:var(--ink-soft);font-size:12px;text-anchor:middle;font-family:IBM Plex Sans'));
+  svg.appendChild(txt(W/2,H-8,'sc_DockQ — Boltz-2','fill:var(--ink-soft);font-size:12px;text-anchor:middle;font-family:IBM Plex Sans'));
   var yl=el('text',{x:14,y:H/2,style:'fill:var(--ink-soft);font-size:12px;text-anchor:middle;font-family:IBM Plex Sans',transform:'rotate(-90 14 '+(H/2)+')'});yl.textContent='sc_DockQ — ESMFold2‑Full';svg.appendChild(yl);
   var c=document.getElementById('poseChart');
   c.innerHTML='<div class="ct">Pose agreement (n=48)</div><div class="cc">Both&#8209;pass box = top&#8209;right of the dashed 0.23 gates.</div>';
@@ -490,7 +488,7 @@ document.getElementById('genStats').innerHTML=[
   svg.appendChild(txt(p-6,y0+3,'0','fill:var(--ink-faint);font-size:10px;font-family:IBM Plex Mono;text-anchor:end'));
   svg.appendChild(txt(p-6,Y(mx)+8,'+'+mx.toFixed(1),'fill:var(--ink-faint);font-size:10px;font-family:IBM Plex Mono;text-anchor:end'));
   svg.appendChild(txt(p-6,Y(mn)+2,mn.toFixed(1),'fill:var(--ink-faint);font-size:10px;font-family:IBM Plex Mono;text-anchor:end'));
-  svg.appendChild(txt(W/2,H-6,'rank (1 &rarr; 43)','fill:var(--ink-soft);font-size:12px;text-anchor:middle;font-family:IBM Plex Sans'));
+  svg.appendChild(txt(W/2,H-6,'rank (1 → 43)','fill:var(--ink-soft);font-size:12px;text-anchor:middle;font-family:IBM Plex Sans'));
   var c=document.getElementById('zChart');
   c.innerHTML='<div class="ct">Composite z&#8209;score, ranked (n=43)</div><div class="cc">4&middot;z(ipSAE)+1&middot;z(sc_DockQ). Note the drop after rank 40.</div>';
   c.appendChild(svg);
@@ -499,7 +497,7 @@ document.getElementById('genStats').innerHTML=[
 
 /* ---------- result stats ---------- */
 document.getElementById('resStats').innerHTML=[
-  [f.stage2,'passed Stage&#8209;2 (ipSAE + sc_DockQ)'],
+  [f.stage2,'passed the &Delta;&Delta;G / CMS physics gate'],
   [f.posepass,'passed all 3 cloud co&#8209;folders'],
   ['4:1','ipSAE : sc_DockQ z&#8209;weight'],
   ['+6.04','best composite z (cand00169)']
