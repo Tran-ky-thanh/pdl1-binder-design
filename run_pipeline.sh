@@ -153,6 +153,9 @@ stage_05_score(){
   tip "Relax the BACKBONE before ddG: side-chain-only relax on recycle-1 structures invents clash blow-ups;"
   tip "use a coordinate-constrained FastRelax (backbone free). ipSAE/sc_DockQ barely move; energy terms become usable."
   ensure_numpy 1.26.4
+  note "Score ALL 1,050 co-folds (ipSAE + sc_DockQ + PyRosetta ΔΔG/CMS) -> the ranked_1050 table that 05b consumes:"
+  c_run "$PY $SCRIPTS/score_complexes.py --out \$PDL1_OUT/iface_1050.csv   # needs PyRosetta + the 1,050 complexes; parallelise with --slice K N"
+  note "bench_ddg.py below is only a QC benchmark (dataset vs ours on ~50); the per-design smoke test follows:"
   local cand="${1:-cand00169}" mp; mp="$(find_complex_pdb "$cand")"
   if [ -z "$mp" ]; then skip "no complex PDB for $cand (run stage 04 first)"; return; fi
   local scores; scores="$(ls "$(dirname "$mp")"/${cand}_scores_rank_001_*.json 2>/dev/null | head -1)"

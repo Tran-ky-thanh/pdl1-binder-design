@@ -116,7 +116,8 @@ scripts/            pipeline + scoring code
   cofold/             stage 06 clients: boltz2_run.py, esmfold2_full.py, protenix_run.py
   ipsae.py            ipSAE (vendored from the Dunbrack lab — see header/attribution)
   score_iface.py      sc_DockQ + BSA vs designed backbone
-  bench_ddg.py        PyRosetta ΔΔG / CMS with constrained full relax
+  score_complexes.py  all-1,050 interface scoring (ipSAE + sc_DockQ + PyRosetta ΔΔG/CMS); reuses bench_ddg.py
+  bench_ddg.py        PyRosetta ΔΔG / CMS core + QC benchmark (constrained full relax)
   run_complex.sh / run_scoring.sh   localColabFold complex-fold + scoring drivers
   analysis/           filter_stages.py (Stage-1/Stage-2 gates), rank_designs.py, align_top30.py,
                       make_valfig.py, and the report generator

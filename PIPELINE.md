@@ -166,9 +166,15 @@ See the ColabFold time-savers and batching tips above — this is the stage they
 
 ### 05 · Interface scoring  *(USER venv, numpy 1.26.4, CPU)* — **runnable**
 ```bash
+# score ALL 1,050 co-folds into the aggregated table that Stage-1/2 (05b) consume:
+python scripts/score_complexes.py --out build/iface_1050.csv   # ipSAE + sc_DockQ + PyRosetta ΔΔG/CMS per design
+                                                               # parallelise with --slice K N; resumable
+# the per-design building blocks it calls:
 python scripts/ipsae.py       <pae.json> <complex.pdb> 10 10   # -> ipSAE_min
 python scripts/score_iface.py <cand>     <complex.pdb>         # -> sc_DockQ, BSA, contacts
-python scripts/bench_ddg.py   ...                              # PyRosetta ddG/CMS (constrained full relax)
+# bench_ddg.py holds the ΔΔG/CMS *core* (constrained full relax + InterfaceAnalyzer) and doubles as a
+# QC benchmark (dataset vs ~50 of ours); score_complexes.py imports that core rather than duplicating it:
+python scripts/bench_ddg.py   build/bench_ddg.csv
 ```
 > **Tip — ipSAE is min-of-both-directions.** ipSAE_min = the minimum of the A→B and B→A
 > `asym` rows for **one** structure (not a min across models). Pure-PAE, so invariant to
