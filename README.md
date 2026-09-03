@@ -145,6 +145,13 @@ for ESM folding.
 
 ## Limitations
 
+- **No optimization loop.** The Anthropic recipe this reproduces is a *single round* of a
+  process meant to run **>=5 rounds**: predict, then redesign around what the prediction
+  revealed, feeding the best-scoring complex from round N back in as input to round N+1. This
+  pipeline runs generate -> filter -> rank exactly once; no design here was ever revised in
+  response to its own folding/interface metrics. Treat these results as a floor on what the
+  underlying generative models can do, not a ceiling reachable with iteration. See the
+  report's [Limitations](report/index.html#limits) section for detail.
 - **In silico only.** No experimental expression, purification, or binding assay. All results
   are model predictions; treat "pass / top-ranked" as *computational triage*, not validated hits.
 - **Reproduction, not new methodology.** The selection metrics and thresholds

@@ -273,14 +273,40 @@ pose-passing designs; sort → rank → top-30.
 
 ### 08 · Build the interactive report  *(USER venv)*
 ```bash
-python scripts/analysis/novelty_and_extract.py   # novelty vs dataset + extract complexes
+python scripts/analysis/novelty_and_extract.py   # novelty (sequence) vs dataset + extract complexes
 python scripts/analysis/slim_report_data.py      # -> report_slim.json (top-30 structures)
 python scripts/analysis/align_top30.py           # superpose all top-30 onto the PD-L1 frame
+
+# structural novelty (TM-align) -- needs the full Anthropic PD-L1 reference set + a TMalign binary
+python scripts/analysis/fetch_pdl1_designs.py    # download 'designed' backbones for all 90 PD-L1 rows
+g++ -O2 -o ~/bin/TMalign TMalign.cpp             # source: https://zhanggroup.org/TM-align/TMalign.cpp
+python scripts/analysis/structural_novelty.py --tmalign ~/bin/TMalign --top 30   # -> results/tm_vs_anthropic.csv
+
+python scripts/analysis/make_valfig.py           # dataset-consensus validation figure
+python scripts/analysis/build_extras.py          # embed figures + 3Dmol overlays into report_slim.json
 python scripts/analysis/build_report.py          # inject into report.template.html -> report.html
+cp $PDL1_OUT/report.html report/index.html
 ```
 Prebuilt report is committed at [`report/index.html`](report/index.html) (open in a browser;
-3Dmol.js loads from CDN). These analysis scripts currently use absolute scratch paths — edit
-the path constants at the top before re-running elsewhere.
+3Dmol.js loads from CDN). All of these scripts read `PDL1_PROJECT` / `PDL1_OUT` from the
+environment (see the top of this file) -- no path editing needed to re-run elsewhere.
+
+**Why fetch_pdl1_designs.py:** design_summary.parquet lists 90 PD-L1 reference designs, but
+only their *sequences* ship in the parquet -- the 3-D "as-designed" backbone for each lives in
+the HuggingFace dataset at `data/designs/PD-L1/<name>/insilico/designed.cif`, fetched on demand
+and converted to legacy PDB. Not every row has one: 12 of the 90 ship only co-fold prediction
+files with no released ground-truth backbone, so the practical maximum is **78/90**. An earlier,
+partial local cache of only 25 of the 90 (a leftover interrupted pull, *not* a curated top-25)
+understated fold conservation in an earlier pass of this analysis -- median TM-score to the
+nearest reference was 0.694 against that partial 25-structure set, vs. **0.788 against the
+correct 78/90 set**. Always check `results/tm_vs_anthropic.csv`'s completeness note before
+citing its numbers.
+
+**Why TM-align instead of Foldseek:** Foldseek's prebuilt release binary is a ~150 MB download
+that was infeasible over this project's throttled connection (~16 KB/min observed); TM-align's
+C++ source is ~200 KB and compiles in seconds with `g++`. TM-align is pairwise (must be run
+once per top-30 x reference pair) rather than a searchable index, but at 30 x 78 = 2,340
+alignments that is still fast enough to run inline.
 
 ---
 

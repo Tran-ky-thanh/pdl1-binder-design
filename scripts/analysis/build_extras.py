@@ -45,6 +45,35 @@ data["novelty_overlay_meta"]={"cand":"cand00725","ref":"mythos_preview_single_ta
     "id":36.1,"ref_kd_nM":0.64,"rmsd":round(sup.rms,2)}
 print("overlay atoms:", data["novelty_overlay"].count("\n"))
 
+# ---- fold/pose overlay: cand01514 vs its nearest reference BY STRUCTURE (TM=0.815) ----
+# Unlike the cand00725 pair above (same epitope, different fold), this is essentially the
+# closest structural match across the full top-30 x 78-reference TM-align sweep in
+# results/tm_vs_anthropic.csv (global max 0.816): same fold AND same binding pose, still
+# <30% sequence identity. rank06 is also an experimentally confirmed binder (Twist Kd 3.0 nM
+# / Adaptyv Kd 29.5 nM, both_bind) so it doubles as the affinity example.
+ref2_pdb=R+"/files/designs/PD-L1/mythos_preview_single_target_pdl1_rank06/designed/designed.pdb"
+cm2=P.get_structure("c2", cf("cand01514"))[0]   # A=target(115), B=cand binder(76)
+rm2=P.get_structure("r2", ref2_pdb)[0]           # A=ref binder(72), B=target(109)
+ct2, rt2 = cm2["A"], rm2["B"]
+cca2={r.id[1]:r["CA"] for r in ct2 if "CA" in r}
+fix2=[];mov2=[]
+for r in rt2:
+    if "CA" in r and r.id[1] in cca2:
+        fix2.append(cca2[r.id[1]]); mov2.append(r["CA"])
+sup2=Superimposer(); sup2.set_atoms(fix2,mov2); sup2.apply(list(rm2.get_atoms()))
+print("fold/pose overlay superpose CA matched=%d rmsd=%.2f"%(len(mov2), sup2.rms))
+
+news2=Structure.Structure("ov2"); newm2=Model.Model(0); news2.add(newm2)
+tA2=ct2.copy(); tA2.id="A"; newm2.add(tA2)                # PD-L1 target
+bB2=cm2["B"].copy(); bB2.id="B"; newm2.add(bB2)           # cand01514 binder
+rC2=rm2["A"].copy(); rC2.id="C"; newm2.add(rC2)           # reference binder (aligned)
+bio2=PDBIO(); bio2.set_structure(news2); buf2=io.StringIO(); bio2.save(buf2)
+data["foldpose_overlay"]="\n".join(l for l in buf2.getvalue().splitlines() if l.startswith("ATOM"))+"\n"
+data["foldpose_overlay_meta"]={"cand":"cand01514","ref":"mythos_preview_single_target_pdl1_rank06",
+    "tmscore":0.815,"id":28.9,"ref_kd_nM":3.0,"ref_kd_note":"Twist Kd; Adaptyv Kd 29.5 nM, both_bind",
+    "rmsd":round(sup2.rms,2)}
+print("fold/pose overlay atoms:", data["foldpose_overlay"].count("\n"))
+
 json.dump(data, open(OUT+"/report_slim.json","w"), separators=(",",":"))
 import os
 print("report_slim.json MB:", round(os.path.getsize(OUT+"/report_slim.json")/1e6,2))

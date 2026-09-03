@@ -183,7 +183,7 @@ hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
   <div class="brand">PD&#8209;L1 <b>&#8594;</b> binders</div>
   <div class="links">
     <a href="#why">Why</a><a href="#build">Generation</a><a href="#colabfold">ColabFold filter</a><a href="#pipeline">Pipeline</a>
-    <a href="#results">Results</a><a href="#top30">Top&nbsp;30</a><a href="#novelty">Novelty</a>
+    <a href="#results">Results</a><a href="#top30">Top&nbsp;30</a><a href="#novelty">Novelty</a><a href="#limits">Limitations</a>
   </div>
   <button class="themebtn" id="themebtn" title="Toggle theme">&#9789;</button>
 </div></nav>
@@ -321,10 +321,10 @@ hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
 <section id="novelty"><div class="wrap">
   <p class="kicker">06 &middot; Novelty</p>
   <h2>Are these just rediscoveries?</h2>
-  <p class="sub">No. Every one of the 43 survivors &mdash; and all of the top&#8209;30 &mdash; is a genuinely new sequence relative to the reference PD&#8209;L1 design set.</p>
+  <p class="sub">Sequence, yes &mdash; every one of the 43 survivors is a genuinely new sequence relative to the reference PD&#8209;L1 design set. Fold, mostly not: superposed backbones land close to the nearest reference. Novelty here lives at the sequence level, not the fold level.</p>
 
   <div class="stats" id="novStats"></div>
-  <p>Each survivor&#8217;s sequence was aligned (global, BLOSUM62) against all <b>90</b> dataset PD&#8209;L1 designs. The maximum identity to any reference design, over the entire top&#8209;30, is <b>44.6%</b>; most sit near 33&ndash;40%. Nothing approaches the &ge;50% identity / &ge;50% coverage band that the dataset methodology treats as a redundancy hit. In short: the pipeline is <b>finding new solutions to the same epitope</b>, not memorising the reference binders.</p>
+  <p>Each survivor&#8217;s sequence was aligned (global, BLOSUM62) against all <b>90</b> dataset PD&#8209;L1 designs. The maximum identity to any reference design, over the entire top&#8209;30, is <b>44.6%</b>; the range across the top&#8209;30 is <b>28.9&ndash;44.6%</b>, most sit near 33&ndash;40%. Nothing approaches the &ge;50% identity / &ge;50% coverage band that the dataset methodology treats as a redundancy hit. In short: at the sequence level, the pipeline is <b>finding new solutions to the same epitope</b>, not memorising the reference binders.</p>
   <div class="callout"><div class="t">Context from the dataset</div>
   The reference PD&#8209;L1 set contains <b id="nvA">90</b> designs, of which <b id="nvB">39</b> are experimentally confirmed binders spanning Kd <b id="nvC">0.6&ndash;2618&nbsp;nM</b>. Reassuringly, for <b>13 of our top&#8209;30</b> the nearest (still &lt;45% identical) reference neighbour is one of those confirmed binders &mdash; the novel designs cluster in a region of sequence space that is known to yield real binders.</div>
   <h3>Same epitope, new backbone — cand00725 vs its nearest reference</h3>
@@ -338,8 +338,33 @@ hr.d{border:0;border-top:1px solid var(--line);margin:34px 0}
       <span><i class="dot" style="background:#e6c74d"></i> epitope hotspots (sticks)</span>
     </div></div>
   </div>
+
+  <h3>How similar is the backbone fold? (C&alpha; / TM&#8209;align)</h3>
+  <p>Sequence identity alone does not say whether the underlying <em>backbone fold</em> is also new. Each top&#8209;30 binder chain was isolated and TM&#8209;aligned (Zhang Lab TM-align) against the binder chain of every reference PD&#8209;L1 design that has a released &ldquo;as&#8209;designed&rdquo; backbone structure &mdash; <b>78 of the 90</b> dataset rows (the other 12 ship only co&#8209;fold prediction files, no ground&#8209;truth backbone, so they cannot be TM&#8209;aligned). Note this reference set is <em>not</em> some curated &ldquo;top&#8209;25&rdquo;: earlier passes of this analysis had only 25 of the 90 structures cached locally (a leftover partial pull), which understated fold conservation; the numbers below are the full 78/90 sweep.</p>
+  <p>Result: the <b>TM&#8209;score to the nearest reference ranges 0.696&ndash;0.816 across the top&#8209;30, median 0.788</b>, and <b>every one of the 30</b> clears the TM&nbsp;&ge;&nbsp;0.5 &ldquo;same fold&rdquo; threshold used in the structure literature &mdash; none is below 0.70. Put plainly: <b>the backbone fold is essentially always recovered</b>, even where the sequence is &lt;45% identical. That is not a failure of the pipeline &mdash; a rigid, well&#8209;packed helical bundle is close to the only physically sensible shape for burying this epitope at this size, so independent generative runs (ours and the dataset&#8217;s) keep re&#8209;deriving it. The genuine novelty in this work is a <b>new sequence for a converged fold</b>, not a new fold.</p>
+  <p>The closest single pair in the whole top&#8209;30&nbsp;&times;&nbsp;78 sweep is <span class="mono">cand01514</span> vs <span class="mono">mythos_preview_single_target_pdl1_rank06</span> at <b>TM&nbsp;=&nbsp;0.815</b> (global max 0.816). Rank06 is itself an experimentally <b>confirmed binder</b> (Twist Kd 3.0&nbsp;nM, Adaptyv Kd 29.5&nbsp;nM, both assays agree it binds). The two chains are only <b>28.9%</b> sequence&#8209;identical. Aligning the two full <em>complexes</em> on their shared PD&#8209;L1 target (109 C&alpha;, RMSD 0.49&nbsp;&Aring;) shows the fold match is not a coincidence of isolated&#8209;chain alignment: the two binders also occupy the <b>same pose</b> on the epitope.</p>
+  <div class="viewcard" style="max-width:640px;margin:6px auto 4px">
+    <div class="viewer" id="foldposeViewer" style="aspect-ratio:16/10"><div class="badge">cand01514 &nbsp;vs&nbsp; ref rank06</div><div class="hint">drag</div></div>
+    <div class="cap"><div class="m">
+      <span><i class="dot" style="background:var(--target)"></i> PD&#8209;L1 target</span>
+      <span><i class="dot" style="background:var(--accent-deep)"></i> cand01514 (TM 0.815 to nearest ref)</span>
+      <span><i class="dot" style="background:#d98a2b"></i> reference rank06 (confirmed, Kd 3.0&nbsp;nM Twist)</span>
+      <span><i class="dot" style="background:#e6c74d"></i> epitope hotspots (sticks)</span>
+    </div></div>
+  </div>
+
   <div class="tbl-wrap"><table id="novTable"></table></div>
-  <p class="src">Note on external novelty: the dataset recipe also screens novelty against UniRef90 (MMseqs2, reject &gt;60% id / &gt;50% cov or TM&nbsp;&ge;&nbsp;0.5). Every free search server for that step was unreachable during this work (search.mmseqs.com down, NCBI rate&#8209;blocked, EBI endpoints gated), and the throttled bandwidth made a local UniRef90 build infeasible, so external novelty was substituted by this internal identity check against the dataset itself.</p>
+  <p class="src">Note on external novelty: the dataset recipe also screens novelty against UniRef90 (MMseqs2, reject &gt;60% id / &gt;50% cov or TM&nbsp;&ge;&nbsp;0.5). Every free search server for that step was unreachable during this work (search.mmseqs.com down, NCBI rate&#8209;blocked, EBI endpoints gated), and the throttled bandwidth made a local UniRef90 build infeasible, so external novelty was substituted by this internal identity/TM check against the dataset itself. Reproduce with <span class="mono">scripts/analysis/fetch_pdl1_designs.py</span> then <span class="mono">scripts/analysis/structural_novelty.py</span>.</p>
+</div></section>
+
+<section id="limits"><div class="wrap">
+  <p class="kicker">07 &middot; Limitations</p>
+  <h2>What this pipeline does not do</h2>
+  <p class="sub">The biggest gap versus the reference methodology is not a metric threshold &mdash; it is a missing <em>loop</em>.</p>
+  <div class="callout warn"><div class="t">No optimization loop</div>
+  The Anthropic recipe this work reproduces is a <b>single round</b> of a process meant to run <b>&ge;5 rounds</b>: predict, then redesign around what the prediction revealed, feeding the best&#8209;scoring PD&#8209;L1 complex from round <i>N</i> back in as structural input for round <i>N&#8201;+&#8201;1</i> (e.g. re&#8209;diffusing or re&#8209;designing around the observed interface, partial&#8209;diffusion on a promising backbone, or MPNN resampling focused on weak contacts). This pipeline does <b>generate &rarr; filter &rarr; rank</b> exactly once. Every design in the top&#8209;30 is a first&#8209;generation candidate that was never revised in response to its own folding or interface metrics.</div>
+  <p>Why: each round of the full recipe costs another pass of RFdiffusion backbones, MPNN sequences, and co&#8209;fold scoring &mdash; on one 8&nbsp;GB consumer GPU plus rate&#8209;limited free cloud co&#8209;folders, a single round already took the bulk of the compute budget for this project (see &ldquo;Why&rdquo; above). Running five was not feasible in the time available.</p>
+  <p>What it means in practice: (1) these results are a <b>floor</b>, not a ceiling &mdash; a redesign loop would very plausibly improve the top hits further, not just re&#8209;confirm them; (2) the novelty numbers above (28.9&ndash;44.6% identity, TM 0.70&ndash;0.82) describe first&#8209;pass diversity only, before any loop had a chance to either converge candidates further toward known solutions or push them away from converged folds; (3) selection here is entirely <b>in&#8209;silico</b> (ipSAE / sc_DockQ / &Delta;&Delta;G&#8209;CMS) &mdash; no wet&#8209;lab affinity measurement closes the loop the way Adaptyv/Twist SPR does in the reference dataset. This is a single&#8209;pass structural screen, not a closed&#8209;loop design campaign.</p>
 </div></section>
 
 </main>
@@ -507,10 +532,12 @@ document.getElementById('resStats').innerHTML=[
 document.getElementById('nvA').textContent=D.anth_pdl1;
 document.getElementById('nvB').textContent=D.anth_conf;
 document.getElementById('novStats').innerHTML=[
-  ['44.6%','max identity to any reference (top&#8209;30)'],
-  ['&lt;45%','all 43 survivors'],
+  ['28.9&ndash;44.6%','sequence identity range to nearest reference (top&#8209;30)'],
   ['0','crossing the &ge;50% redundancy band'],
-  ['13 / 30','nearest reference is a confirmed binder']
+  ['13 / 30','nearest reference (by sequence) is a confirmed binder'],
+  ['0.696&ndash;0.816','TM&#8209;score range to nearest reference (top&#8209;30, 78/90 structures)'],
+  ['30 / 30','clear the TM&nbsp;&ge;&nbsp;0.5 same&#8209;fold threshold'],
+  ['0.815','TM to nearest reference for the fold+pose example (cand01514)']
 ].map(function(s){return '<div class="stat"><div class="n">'+s[0]+'</div><div class="l">'+s[1]+'</div></div>';}).join('');
 
 (function(){
@@ -650,6 +677,27 @@ function mkViewer(elm,pdb,opt){
     try{
       var v=$3Dmol.createViewer(host,{backgroundColor:cv('--viewer-bg')||'#0d1512',antialias:true});
       v.addModel(DATA.novelty_overlay,'pdb');
+      v.setStyle({chain:'A'},{cartoon:{color:TC,opacity:1,thickness:0.5}});
+      v.setStyle({chain:'B'},{cartoon:{color:BC,thickness:0.75,arrows:true}});
+      v.setStyle({chain:'C'},{cartoon:{color:RC,thickness:0.75,arrows:true}});
+      try{ v.addStyle({chain:'A', resi:HOTSPOTS},{stick:{radius:0.22,colorscheme:'yellowCarbon'}}); }catch(e){}
+      try{ v.addSurface($3Dmol.SurfaceType.VDW,{opacity:0.5,color:'#ece9e2'},{chain:'A'}); }catch(e){}
+      v.zoomTo({chain:'A'}); v.render();
+    }catch(e){}
+  }
+  var io=new IntersectionObserver(function(e){ if(e[0].isIntersecting){ render(); io.disconnect(); } },{rootMargin:'120px'});
+  io.observe(host);
+})();
+
+/* ---------- fold/pose overlay (cand01514 vs its nearest reference BY STRUCTURE) ---------- */
+(function(){
+  var host=document.getElementById('foldposeViewer');
+  if(!host || !DATA.foldpose_overlay) return;
+  var TC=cv('--target')||'#a99a80', BC=cv('--accent-deep')||'#0a6d64', RC='#d98a2b';
+  function render(){
+    try{
+      var v=$3Dmol.createViewer(host,{backgroundColor:cv('--viewer-bg')||'#0d1512',antialias:true});
+      v.addModel(DATA.foldpose_overlay,'pdb');
       v.setStyle({chain:'A'},{cartoon:{color:TC,opacity:1,thickness:0.5}});
       v.setStyle({chain:'B'},{cartoon:{color:BC,thickness:0.75,arrows:true}});
       v.setStyle({chain:'C'},{cartoon:{color:RC,thickness:0.75,arrows:true}});
