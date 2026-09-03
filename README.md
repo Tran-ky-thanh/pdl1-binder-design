@@ -118,7 +118,8 @@ scripts/            pipeline + scoring code
   score_iface.py      sc_DockQ + BSA vs designed backbone
   bench_ddg.py        PyRosetta ΔΔG / CMS with constrained full relax
   run_complex.sh / run_scoring.sh   localColabFold complex-fold + scoring drivers
-  analysis/           rank_designs.py, align_top30.py, make_valfig.py, and the report generator
+  analysis/           filter_stages.py (Stage-1/Stage-2 gates), rank_designs.py, align_top30.py,
+                      make_valfig.py, and the report generator
 results/            small result tables (CSV/TXT) for every stage of the funnel
 docs/figures/       validation figures
 report/index.html   the interactive HTML report (self-contained; 3Dmol.js from CDN)

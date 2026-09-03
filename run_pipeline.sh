@@ -161,6 +161,16 @@ stage_05_score(){
   c_run "$PY $SCRIPTS/score_iface.py $cand <complex.pdb>           # -> sc_DockQ,BSA,contacts"
   run "$PY $SCRIPTS/score_iface.py '$cand' '$mp'"
   c_run "$PY $SCRIPTS/bench_ddg.py ...   # PyRosetta ddG/CMS after CONSTRAINED FULL relax (needs pyrosetta)"
+  note "ddG/CMS are computed for all 1,050 (ranked_1050.csv) and feed the Stage-2 physics gate (see 05b_filter)."
+}
+
+stage_05b_filter(){
+  c_hdr "05b  two-stage screen: ipSAE+sc_DockQ -> 242 ; PyRosetta physics -> 157   [RUNNABLE]"
+  tip "Stage-2 is a PHYSICS gate, not another pose gate: all 242 Stage-1 designs already pass sc_DockQ>=0.23."
+  tip "PyRosetta ΔΔG<=-40 REU & CMS>=360 Å² removes 85 weak/repulsive interfaces (242 -> 157); then curation -> 50."
+  ensure_numpy 1.26.4
+  c_run "$PY $SCRIPTS/analysis/filter_stages.py --ranked $REPO/results/ranked_1050.csv --stage1 $REPO/results/stage1_pass.txt --verify"
+  run "$PY $SCRIPTS/analysis/filter_stages.py --ranked '$REPO/results/ranked_1050.csv' --stage1 '$REPO/results/stage1_pass.txt' --verify"
 }
 
 stage_06_cofold(){
@@ -201,11 +211,11 @@ stage_08_report(){
   c_run "$PY $SCRIPTS/analysis/align_top30.py           # superpose all top-30 onto the PD-L1 frame"
   c_run "$PY $SCRIPTS/analysis/build_report.py          # inject data into report.template.html -> report.html"
   note "prebuilt report is committed at report/index.html (open in a browser; 3Dmol.js from CDN)."
-  note "these analysis scripts currently use absolute scratch paths - see PIPELINE.md before re-running."
+  note "set PDL1_PROJECT and PDL1_OUT first (see PIPELINE.md); generated files land in \$PDL1_OUT."
   [ -f "$REPO/report/index.html" ] && ok "report present: report/index.html" || skip "report not built yet"
 }
 
-STAGES=(00_rfdiff 01_mpnn 02_monomer 03_diversity 04_complex 05_score 06_cofold 07_rank 08_report)
+STAGES=(00_rfdiff 01_mpnn 02_monomer 03_diversity 04_complex 05_score 05b_filter 06_cofold 07_rank 08_report)
 
 do_check(){
   c_hdr "environment check"

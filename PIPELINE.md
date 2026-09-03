@@ -178,6 +178,23 @@ python scripts/bench_ddg.py   ...                              # PyRosetta ddG/C
 > invents clash blow-ups (ΔΔG in the thousands). Use a coordinate-constrained `FastRelax`
 > with the backbone free. ipSAE/sc_DockQ barely move; the energy terms become usable.
 
+### 05b · Two-stage screen → 157, then curation → 50  *(USER venv, numpy 1.26.4)* — **runnable**
+The 1,050 co-folds are filtered in two stages, then curated:
+
+- **Stage-1 (1,050 → 242):** ipSAE + sc_DockQ consensus gate (every one of the 242 survivors
+  already has `sc_DockQ ≥ 0.23`).
+- **Stage-2 (242 → 157):** a **PyRosetta physics gate** on the interface energetics measured for
+  all 1,050 (the `ddg`/`cms` columns of `ranked_1050.csv`) — keep `ΔΔG ≤ −40 REU` **and**
+  `CMS ≥ 360 Å²`. This removes **85** designs that pass the co-fold consensus but have
+  weak/repulsive interfaces — a cheap physical-plausibility layer before the expensive cloud
+  stage. It is *not* another pose filter; it is orthogonal physics.
+- **Curation (157 → 50):** liability (Cys parity / homopolymer) + redundancy clustering.
+
+```bash
+python scripts/analysis/filter_stages.py --ranked results/ranked_1050.csv \
+       --stage1 results/stage1_pass.txt --verify   # reproduces stage2_pass (157) exactly
+```
+
 ### 06 · Cloud multi-predictor consensus → 43 pose-PASS  *(USER venv + keys)*
 Fold each shortlisted design with three independent cloud co-folders; keep only designs where
 **all three** reproduce the pose at `sc_DockQ ≥ 0.23`.
