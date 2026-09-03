@@ -117,8 +117,23 @@ Exact settings, recovered from the run `.trb` configs (checkpoint `Complex_base_
 | 4Z18_binder | `pdl1_4Z18.pdb` | `A18-132/0 65-85` | 65–85 | `A56,A113,A115,A123` |
 
 One invocation used `num_designs` 4–8; the script was looped to build ~50 backbones per template,
-then diversity-reduced to 52. The de-novo target is numbered 2–110 and the crystal templates 18–132,
-so the two hotspot sets mark the **same epitope** offset by 17.
+then diversity-reduced to 52.
+
+**Hotspot residues — one authoritative mapping.** The two hotspot lists refer to the *same four
+PD-L1 residues* on the PD-1-binding face; only the numbering differs (crystal templates are
+numbered 18–132, the de-novo target 2–110, so `construct = crystal − 17`). The identities were
+verified directly in the input structures (the residue at each position is identical in all of
+`pdl1_5C3T/4ZQK/4Z18.pdb` and `pdl1_target.pdb`):
+
+| PD-L1 hotspot | crystal 5C3T/4ZQK/4Z18 | de-novo construct |
+|---|---|---|
+| **Tyr56**  | `A56`  = Y | `A39`  = Y |
+| **Arg113** | `A113` = R | `A96`  = R |
+| **Met115** | `A115` = M | `A98`  = M |
+| **Tyr123** | `A123` = Y | `A106` = Y |
+
+These are the canonical PD-1-contacting residues of PD-L1 (Y56, R113, M115, Y123). This table is
+the single source of truth; the README and report cite `Y56 / R113 / M115 / Y123` (crystal numbering).
 ```bash
 # the arm each row expands to:
 python /root/protein/RFdiffusion/scripts/run_inference.py \
